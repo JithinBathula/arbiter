@@ -1,10 +1,21 @@
-"""Evaluator implementations for various evaluation criteria.
+"""Evaluators for assessing LLM outputs.
 
-This module contains evaluators for:
-- Semantic similarity
-- Factuality checking
-- Consistency verification
-- Custom criteria evaluation
+This module provides evaluators for different aspects of LLM outputs:
+- Semantic similarity between output and reference
+- Factuality checking (planned)
+- Consistency evaluation (planned)
+- Relevance scoring (planned)
+
+All evaluators inherit from BasePydanticEvaluator and automatically
+track LLM interactions for full observability.
 """
 
-__all__ = []
+from .base import BasePydanticEvaluator, EvaluatorResponse
+from .semantic import SemanticEvaluator, SemanticResponse
+
+__all__ = [
+    "BasePydanticEvaluator",
+    "EvaluatorResponse",
+    "SemanticEvaluator",
+    "SemanticResponse",
+]
