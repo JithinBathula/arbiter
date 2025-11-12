@@ -1,0 +1,150 @@
+"""Core data models for Arbiter evaluation framework.
+
+This module defines the primary data structures used throughout Arbiter:
+- EvaluationResult: Complete result of an evaluation
+- Score: Individual metric score
+- Metric: Metadata about a computed metric
+"""
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
+__all__ = ["Score", "Metric", "EvaluationResult"]
+
+
+class Score(BaseModel):
+    """Individual evaluation score for a specific metric.
+
+    Represents a single numeric score with metadata about how it was
+    computed and what it represents.
+
+    Example:
+        >>> score = Score(
+        ...     name="semantic_similarity",
+        ...     value=0.92,
+        ...     confidence=0.95,
+        ...     explanation="High semantic overlap between output and reference"
+        ... )
+    """
+
+    name: str = Field(..., description="Name of the metric (e.g., 'factuality')")
+    value: float = Field(..., ge=0.0, le=1.0, description="Score value between 0 and 1")
+    confidence: Optional[float] = Field(
+        None, ge=0.0, le=1.0, description="Confidence in this score"
+    )
+    explanation: Optional[str] = Field(
+        None, description="Human-readable explanation of the score"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata about the score"
+    )
+
+
+class Metric(BaseModel):
+    """Metadata about a computed metric.
+
+    Provides information about how a metric was computed, including
+    the model used, processing time, and any relevant context.
+    """
+
+    name: str = Field(..., description="Name of the metric")
+    evaluator: str = Field(..., description="Name of the evaluator that computed it")
+    model: Optional[str] = Field(None, description="LLM model used (if applicable)")
+    processing_time: float = Field(..., description="Time taken to compute (seconds)")
+    tokens_used: int = Field(default=0, description="Tokens consumed (if applicable)")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
+
+
+class EvaluationResult(BaseModel):
+    """Complete result of an evaluation operation.
+
+    Contains all scores, metadata, and audit trail information from
+    evaluating an LLM output against reference or criteria.
+
+    This is the primary result object returned by all evaluation
+    operations in Arbiter.
+
+    Example:
+        >>> result = EvaluationResult(
+        ...     output="Paris is the capital of France",
+        ...     reference="The capital of France is Paris",
+        ...     scores=[
+        ...         Score(name="semantic_similarity", value=0.95),
+        ...         Score(name="factuality", value=1.0),
+        ...     ],
+        ...     overall_score=0.975,
+        ...     passed=True
+        ... )
+    """
+
+    # Input data
+    output: str = Field(..., description="The LLM output that was evaluated")
+    reference: Optional[str] = Field(
+        None, description="Reference text used for comparison (if applicable)"
+    )
+    criteria: Optional[str] = Field(
+        None, description="Evaluation criteria used (if reference-free)"
+    )
+
+    # Results
+    scores: List[Score] = Field(
+        default_factory=list, description="Individual metric scores"
+    )
+    overall_score: float = Field(
+        ..., ge=0.0, le=1.0, description="Aggregate score across all metrics"
+    )
+    passed: bool = Field(
+        ..., description="Whether evaluation passed quality threshold"
+    )
+
+    # Metadata
+    metrics: List[Metric] = Field(
+        default_factory=list, description="Metadata about computed metrics"
+    )
+    evaluator_names: List[str] = Field(
+        default_factory=list, description="Names of evaluators used"
+    )
+    total_tokens: int = Field(default=0, description="Total tokens used")
+    processing_time: float = Field(
+        ..., description="Total processing time in seconds"
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow, description="When evaluation completed"
+    )
+
+    # Audit trail
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata and context"
+    )
+
+    def get_score(self, name: str) -> Optional[Score]:
+        """Get score by metric name.
+
+        Args:
+            name: Name of the metric to retrieve
+
+        Returns:
+            Score object if found, None otherwise
+        """
+        for score in self.scores:
+            if score.name == name:
+                return score
+        return None
+
+    def get_metric(self, name: str) -> Optional[Metric]:
+        """Get metric metadata by name.
+
+        Args:
+            name: Name of the metric to retrieve
+
+        Returns:
+            Metric object if found, None otherwise
+        """
+        for metric in self.metrics:
+            if metric.name == name:
+                return metric
+        return None
