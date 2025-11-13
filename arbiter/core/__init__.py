@@ -35,8 +35,15 @@ from .middleware import (
 from .models import ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
 from .monitoring import PerformanceMetrics, PerformanceMonitor, get_global_monitor, monitor
 from .retry import RETRY_PERSISTENT, RETRY_QUICK, RETRY_STANDARD, RetryConfig, with_retry
+from .registry import (
+    AVAILABLE_EVALUATORS,
+    get_available_evaluators,
+    get_evaluator_class,
+    register_evaluator,
+    validate_evaluator_name,
+)
 from .type_defs import MiddlewareContext
-from .types import MetricType, Provider, StorageType
+from .types import EvaluatorName, MetricType, Provider, StorageType
 
 __all__ = [
     # Exceptions
@@ -88,5 +95,12 @@ __all__ = [
     "Provider",
     "MetricType",
     "StorageType",
+    "EvaluatorName",
     "MiddlewareContext",
+    # Registry
+    "AVAILABLE_EVALUATORS",
+    "register_evaluator",
+    "get_evaluator_class",
+    "get_available_evaluators",
+    "validate_evaluator_name",
 ]

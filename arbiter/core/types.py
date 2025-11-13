@@ -6,8 +6,9 @@ and storage types.
 """
 
 from enum import Enum
+from typing import Literal
 
-__all__ = ["Provider", "MetricType", "StorageType"]
+__all__ = ["Provider", "MetricType", "StorageType", "EvaluatorName"]
 
 
 class Provider(str, Enum):
@@ -60,3 +61,9 @@ class StorageType(str, Enum):
     FILE = "file"
     REDIS = "redis"
     CUSTOM = "custom"
+
+
+# Type hint for evaluator names
+# This will be dynamically updated as evaluators are registered
+# For now, includes built-in evaluators
+EvaluatorName = Literal["semantic", "custom_criteria"]

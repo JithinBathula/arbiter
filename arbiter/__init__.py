@@ -53,6 +53,7 @@ from .api import compare, evaluate
 
 # Core components
 from .core import (
+    AVAILABLE_EVALUATORS,
     ArbiterError,
     BaseEvaluator,
     CachingMiddleware,
@@ -61,6 +62,7 @@ from .core import (
     ConnectionMetrics,
     EvaluationResult,
     EvaluatorError,
+    EvaluatorName,
     LLMClient,
     LLMInteraction,
     LLMManager,
@@ -83,8 +85,12 @@ from .core import (
     StorageType,
     TimeoutError,
     ValidationError,
+    get_available_evaluators,
+    get_evaluator_class,
     get_global_monitor,
     monitor,
+    register_evaluator,
+    validate_evaluator_name,
 )
 
 # Evaluators
@@ -143,6 +149,13 @@ __all__ = [
     "Provider",
     "MetricType",
     "StorageType",
+    "EvaluatorName",
+    # Registry
+    "AVAILABLE_EVALUATORS",
+    "register_evaluator",
+    "get_evaluator_class",
+    "get_available_evaluators",
+    "validate_evaluator_name",
     # Exceptions
     "ArbiterError",
     "ConfigurationError",

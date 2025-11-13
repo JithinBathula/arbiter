@@ -34,15 +34,17 @@ import logging
 import time
 from typing import Dict, List, Optional, Union
 
-from .core import LLMClient, LLMManager, Provider
+from .core import (
+    LLMClient,
+    LLMManager,
+    Provider,
+    get_evaluator_class,
+    validate_evaluator_name,
+)
 from .core.exceptions import ArbiterError, EvaluatorError, ValidationError
 from .core.middleware import MiddlewarePipeline
 from .core.models import ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
-from .evaluators import (
-    CustomCriteriaEvaluator,
-    PairwiseComparisonEvaluator,
-    SemanticEvaluator,
-)
+from .evaluators import PairwiseComparisonEvaluator
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +92,8 @@ async def evaluate(
           overall_score = semantic_score (not average of semantic and 0)
 
     Raises:
-        ValidationError: If input validation fails
-        ValueError: If evaluator name is not recognized
+        ValidationError: If input validation fails or evaluator name is not recognized.
+            Error messages include available evaluator names for helpful debugging.
         EvaluatorError: If all evaluators fail (partial results return successfully)
 
     Example:
@@ -175,25 +177,36 @@ async def _evaluate_impl(
     if llm_client is None:
         llm_client = await LLMManager.get_client(provider=provider, model=model, temperature=0.0)
 
-    # Initialize evaluator instances
+    # Initialize evaluator instances using registry
     from .core.interfaces import BaseEvaluator
 
     evaluator_instances: List[BaseEvaluator] = []
     for evaluator_name in evaluators:
-        if evaluator_name == "semantic":
-            evaluator_instances.append(SemanticEvaluator(llm_client))
-        elif evaluator_name == "custom_criteria":
-            # CustomCriteriaEvaluator requires criteria
-            if not criteria:
-                raise ValidationError(
-                    "custom_criteria evaluator requires criteria parameter. "
-                    "Provide criteria as a string or dict."
-                )
-            evaluator_instances.append(CustomCriteriaEvaluator(llm_client))
-        else:
-            raise ValueError(
-                f"Unknown evaluator: {evaluator_name}. " f"Available: semantic, custom_criteria"
+        # Validate evaluator name
+        validate_evaluator_name(evaluator_name)
+
+        # Get evaluator class from registry
+        evaluator_class = get_evaluator_class(evaluator_name)
+        if evaluator_class is None:
+            # This should not happen if validate_evaluator_name worked correctly
+            from .core.registry import get_available_evaluators
+
+            available = get_available_evaluators()
+            available_str = ", ".join(f"'{e}'" for e in available)
+            raise ValidationError(
+                f"Evaluator '{evaluator_name}' not found in registry. "
+                f"Available evaluators: [{available_str}]."
             )
+
+        # Special validation for custom_criteria evaluator
+        if evaluator_name == "custom_criteria" and not criteria:
+            raise ValidationError(
+                "custom_criteria evaluator requires criteria parameter. "
+                "Provide criteria as a string or dict."
+            )
+
+        # Instantiate evaluator
+        evaluator_instances.append(evaluator_class(llm_client))
 
     # Run evaluations and collect scores
     scores: List[Score] = []
