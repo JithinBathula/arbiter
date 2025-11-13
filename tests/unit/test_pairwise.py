@@ -5,42 +5,13 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from arbiter.core.exceptions import EvaluatorError, ValidationError
-from arbiter.core.llm_client import LLMClient
 from arbiter.core.models import ComparisonResult
 from arbiter.evaluators.pairwise import (
     AspectComparison,
     PairwiseComparisonEvaluator,
     PairwiseResponse,
 )
-
-
-class MockAgentResult:
-    """Mock PydanticAI agent result."""
-
-    def __init__(self, output: object):
-        self.output = output
-
-    def usage(self):
-        """Mock usage information."""
-        mock_usage = MagicMock()
-        mock_usage.total_tokens = 150
-        return mock_usage
-
-
-@pytest.fixture
-def mock_llm_client():
-    """Create a mock LLM client."""
-    client = MagicMock(spec=LLMClient)
-    client.model = "gpt-4o-mini"
-    client.temperature = 0.0
-    return client
-
-
-@pytest.fixture
-def mock_agent():
-    """Create a mock PydanticAI agent."""
-    agent = AsyncMock()
-    return agent
+from tests.conftest import MockAgentResult
 
 
 @pytest.fixture
