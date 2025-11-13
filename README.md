@@ -1,14 +1,42 @@
 <div align="center">
-  <img src="arbiter/arbiter.png" alt="Arbiter Logo" width="200"/>
+  <h1>Arbiter</h1>
 
-  # Arbiter
+  <p><strong>Production-grade LLM evaluation framework with complete observability</strong></p>
 
-  **Production-grade LLM evaluation framework with complete observability**
-
-  [![Python](https://img.shields.io/badge/python-3.10+-blue)](https://python.org)
-  [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-  [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/evanvolgas/arbiter)
+  <p>
+    <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
+    <a href="https://github.com/evanvolgas/arbiter"><img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version"></a>
+  </p>
 </div>
+
+---
+
+## Why This Matters
+
+**The Problem:** When AI generates text, how do you know if it's good? Teams building with ChatGPT, Claude, or other AI models face a critical challenge: evaluating quality at scale. Manual review doesn't scale beyond a few examples, and writing custom evaluation code for every use case is time-consuming and error-prone.
+
+**What Arbiter Solves:**
+- **For Product Teams**: Know which AI responses are working and which aren't—automatically
+- **For Engineers**: Evaluate 1,000 AI outputs in the time it takes to review 10 manually
+- **For Businesses**: See exactly what your AI costs and where it's being used, with complete audit trails
+
+**Real-World Example:**
+Imagine you're building a customer support chatbot. Without Arbiter, you'd need to:
+1. Manually review hundreds of responses
+2. Guess at what "good" means
+3. Hope nothing breaks in production
+4. Have no idea what your AI actually costs
+
+With Arbiter, you can:
+1. Automatically evaluate every response against your criteria
+2. Get objective quality scores in seconds
+3. See every AI call with full cost and performance data
+4. Catch problems before customers do
+
+**Bottom Line:** Arbiter makes AI quality measurable, trackable, and improvable—without requiring a PhD in machine learning.
+
+---
 
 ## What is Arbiter?
 
