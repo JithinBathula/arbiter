@@ -6,14 +6,26 @@ and custom criteria. Built on PydanticAI with optional streaming support.
 
 ## Quick Start:
 
-    >>> from arbiter import evaluate, SemanticEvaluator
-    >>> evaluator = SemanticEvaluator(model="gpt-4o")
-    >>> score = await evaluator.score(
+    >>> from arbiter import evaluate
+    >>>
+    >>> # Simple evaluation with automatic client management
+    >>> result = await evaluate(
     ...     output="Paris is the capital of France",
     ...     reference="The capital of France is Paris",
-    ...     criteria="factuality"
+    ...     evaluators=["semantic"],
+    ...     model="gpt-4o"
     ... )
-    >>> print(score.value)
+    >>> print(f"Score: {result.overall_score}")
+    >>>
+    >>> # Or use evaluator directly for more control
+    >>> from arbiter import SemanticEvaluator, LLMManager
+    >>> client = await LLMManager.get_client(model="gpt-4o")
+    >>> evaluator = SemanticEvaluator(client)
+    >>> score = await evaluator.evaluate(
+    ...     output="Paris is the capital of France",
+    ...     reference="The capital of France is Paris"
+    ... )
+    >>> print(f"Score: {score.value}")
 
 ## Key Features:
 
@@ -35,6 +47,9 @@ https://docs.arbiter.ai/
 """
 
 from dotenv import load_dotenv
+
+# Core API
+from .api import evaluate
 
 # Core components
 from .core import (
@@ -71,6 +86,9 @@ from .core import (
     monitor,
 )
 
+# Evaluators
+from .evaluators import BasePydanticEvaluator, SemanticEvaluator
+
 # Load environment variables
 load_dotenv()
 
@@ -79,6 +97,11 @@ __version__ = "0.1.0"
 __all__ = [
     # Version
     "__version__",
+    # Main API
+    "evaluate",
+    # Evaluators
+    "SemanticEvaluator",
+    "BasePydanticEvaluator",
     # Core Models
     "EvaluationResult",
     "Score",

@@ -33,18 +33,38 @@ pip install -e .
 ## Quick Start
 
 ```python
-from arbiter import evaluate, SemanticEvaluator
+from arbiter import evaluate
 
-# Simple evaluation
-evaluator = SemanticEvaluator(model="gpt-4o")
-
-score = await evaluator.score(
+# Simple evaluation with automatic client management
+result = await evaluate(
     output="Paris is the capital of France",
     reference="The capital of France is Paris",
-    criteria="factuality"
+    evaluators=["semantic"],
+    model="gpt-4o-mini"
 )
 
-print(f"Score: {score.value}")  # High score for semantic match
+print(f"Score: {result.overall_score:.2f}")
+print(f"Passed: {result.passed}")
+print(f"Interactions: {len(result.interactions)}")
+```
+
+Or use evaluators directly for more control:
+
+```python
+from arbiter import SemanticEvaluator, LLMManager
+
+# Get LLM client
+client = await LLMManager.get_client(model="gpt-4o-mini")
+
+# Create and use evaluator
+evaluator = SemanticEvaluator(client)
+score = await evaluator.evaluate(
+    output="Paris is the capital of France",
+    reference="The capital of France is Paris"
+)
+
+print(f"Semantic similarity: {score.value:.2f}")
+print(f"Confidence: {score.confidence:.2f}")
 ```
 
 ## Key Features
@@ -63,25 +83,37 @@ print(f"Score: {score.value}")  # High score for semantic match
 Evaluators assess LLM outputs against criteria:
 
 ```python
-# Semantic similarity
-semantic_score = await evaluator.score(output, reference, "semantic_similarity")
+from arbiter import evaluate
 
-# Factuality checking
-factuality_score = await evaluator.score(output, reference, "factuality")
+# Semantic similarity (currently available)
+result = await evaluate(
+    output="Your LLM output here",
+    reference="Expected output",
+    evaluators=["semantic"],
+    model="gpt-4o-mini"
+)
 
-# Custom criteria
-custom_score = await evaluator.score(output, reference, "matches company tone")
+# Multiple evaluators (coming soon)
+# result = await evaluate(
+#     output="Your LLM output",
+#     reference="Expected output",
+#     evaluators=["semantic", "factuality", "consistency"],
+#     model="gpt-4o-mini"
+# )
 ```
 
-### Batch Evaluation
+### Batch Evaluation (Coming Soon)
 
 Process multiple outputs efficiently:
 
 ```python
-outputs = ["Output 1", "Output 2", "Output 3"]
-references = ["Reference 1", "Reference 2", "Reference 3"]
-
-scores = await evaluator.batch_score(outputs, references)
+# Planned API for Phase 4
+# from arbiter import batch_evaluate
+#
+# outputs = ["Output 1", "Output 2", "Output 3"]
+# references = ["Reference 1", "Reference 2", "Reference 3"]
+#
+# results = await batch_evaluate(outputs, references, evaluators=["semantic"])
 ```
 
 ### Streaming (Optional)
