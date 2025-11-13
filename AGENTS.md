@@ -138,8 +138,9 @@ arbiter/
 **Pattern:** Template Method (BasePydanticEvaluator)
 **Current:**
 - SemanticEvaluator ✅
+- CustomCriteriaEvaluator ✅ (Phase 2.5)
+- PairwiseComparisonEvaluator ✅ (Phase 2.5)
 **Planned:**
-- CustomCriteriaEvaluator (Phase 2.5)
 - FactualityEvaluator (Phase 5)
 - RelevanceEvaluator (Phase 5)
 - ToxicityEvaluator (Phase 5)
