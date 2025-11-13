@@ -3,7 +3,7 @@
 **Type:** Running Context (Layer 3 of 4-layer context framework)
 **Current Milestone:** Phase 2.5 - Fill Critical Gaps
 **Duration:** 2-3 weeks (Nov 22 - Dec 12, 2025)
-**Status:** 🚧 IN PROGRESS (60% complete)
+**Status:** 🚧 IN PROGRESS (80% complete)
 **Last Updated:** 2025-11-12
 
 > **Note:** This file tracks ONLY the current milestone. For the complete roadmap, see PROJECT_PLAN.md.
@@ -388,14 +388,18 @@ result = await evaluate(evaluators=["my_evaluator"])  # Now works!
   - [ ] examples/14_rag_evaluation.py - RAG system evaluation pattern
   - [ ] examples/15_production_setup.py - Production best practices
 
-- [ ] **API Reference Documentation**
-  - [ ] Document evaluate() function
-  - [ ] Document compare() function
-  - [ ] Document all evaluators
-  - [ ] Document EvaluationResult model
-  - [ ] Document ComparisonResult model
-  - [ ] Document middleware
-  - [ ] Document LLMManager
+- [x] **API Reference Documentation** ✅ COMPLETED
+  - [x] Document evaluate() function ✅
+  - [x] Document compare() function ✅
+  - [x] Document all evaluators ✅
+  - [x] Document EvaluationResult model ✅
+  - [x] Document ComparisonResult model ✅
+  - [x] Document middleware ✅
+  - [x] Document LLMClient ✅
+  - [x] Document Registry ✅
+  - [x] Document Retry ✅
+  - [x] Set up MkDocs configuration ✅
+  - [x] Create documentation structure ✅
 
 - [ ] **Guides**
   - [ ] Quick start guide (README.md)
@@ -450,11 +454,10 @@ result = await evaluate(evaluators=["my_evaluator"])  # Now works!
 - ✅ Evaluator Registry & Validation (Week 2-3) - Registry system with custom evaluator support
 - ✅ Test Infrastructure Refactoring (Nov 12) - Eliminated ~158 lines of duplicate code
 
-**Remaining (40%):**
-- ⏳ 2 more examples (batch pattern, advanced config)
-- ⏳ API reference documentation (Sphinx/MkDocs setup)
-- ⏳ User guides
+**Remaining (20%):**
+- ⏳ User guides (quickstart, installation, custom evaluators)
 - ⏳ Troubleshooting guide
+- ⏳ Optional examples (RAG evaluation, production setup)
 
 **Blocked:**
 - None
@@ -465,9 +468,11 @@ result = await evaluate(evaluators=["my_evaluator"])  # Now works!
 - ✅ Documentation generation (test-improvements.md, multiple-evaluators.md, evaluator-registry.md)
 
 **Next Up:**
-- Remaining examples (batch, advanced config)
-- API documentation (Sphinx/MkDocs setup, API reference)
-- User guides (quickstart, installation, custom evaluators)
+- ✅ Batch example (batch_manual.py) - COMPLETED
+- ✅ Advanced config example (advanced_config.py) - COMPLETED
+- ✅ API documentation (MkDocs setup + 16 API pages) - COMPLETED
+- ⏳ User guides (quickstart exists, need installation, troubleshooting)
+- ⏳ Optional examples (RAG evaluation, production setup)
 
 ---
 
