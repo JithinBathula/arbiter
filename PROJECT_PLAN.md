@@ -1,7 +1,7 @@
 # Arbiter Project Plan
 
-**Version:** 1.0
-**Timeline:** 7 months to v1.0
+**Version:** 2.0 (Revised Scope)
+**Timeline:** 4-5 months to v1.0 (revised from 7 months)
 **Current Status:** Phase 2 Complete, Phase 2.5 Starting
 **Last Updated:** 2025-11-12
 
@@ -13,30 +13,98 @@ This document provides the complete multi-milestone roadmap for Arbiter, from fo
 
 **Goal:** Build production-grade LLM evaluation infrastructure with simple API, complete observability, and provider-agnostic design.
 
-**Key Metrics:**
-- 8+ evaluators by Month 4
-- >80% test coverage
-- <200ms p95 latency
+**Strategic Focus:** Play to strengths - simplicity, observability, production-readiness. Don't compete on feature count.
+
+**Key Metrics (Revised):**
+- 5-7 evaluators by Month 4 (focused on quality)
+- >80% test coverage (maintain current)
+- <200ms p95 latency (maintain current)
+- Batch evaluation API (production necessity)
+- PyPI package published (adoption blocker)
 - 100+ GitHub stars by Month 3
 
 ---
 
-## Timeline Summary
+## Timeline Summary (Revised)
 
 | Phase | Duration | Status | Completion |
 |-------|----------|--------|------------|
 | Phase 1: Foundation | 2 weeks | ✅ Done | 100% |
 | Phase 2: Core Engine | 1 week | ✅ Done | 100% |
-| **Phase 2.5: Critical Gaps** | **2-3 weeks** | **🚧 Current** | **0%** |
+| **Phase 2.5: Critical Gaps** | **2-3 weeks** | **🚧 Current** | **60%** |
 | Phase 3: Semantic Comparison | 2 weeks | ⏳ Next | 0% |
-| Phase 4: Storage & Batch | 2 weeks | ⏳ Planned | 0% |
-| Phase 5: Core Evaluators | 6 weeks | ⏳ Planned | 0% |
-| Phase 6: Quality Assurance | 2-3 weeks | ⏳ Planned | 0% |
-| Phase 7: Streaming | 1 week | ⏳ Future | 0% |
-| Phase 8: Testing & Docs | 2 weeks | ⏳ Future | 0% |
-| Phase 9: Polish & Release | 2 weeks | ⏳ Future | 0% |
+| Phase 4: Batch Evaluation | 1 week | ⏳ Planned | 0% |
+| Phase 5: Core Evaluators | 4-5 weeks | ⏳ Planned | 0% |
+| Phase 6: Polish & Release | 2 weeks | ⏳ Planned | 0% |
 
-**Total:** ~6-7 months to v1.0
+**Total:** ~4-5 months to v1.0
+
+**Deferred:**
+- ⏸️ Storage Backends (Phase 4 original) - Deferred to Phase 2.0
+- ⏸️ Quality Assurance (Phase 6 original) - Deferred to Phase 2.0
+- ⏸️ Streaming Support (Phase 7) - Deferred indefinitely
+
+---
+
+## Strategic Scope Decisions (November 2025)
+
+### Core Strengths (Play to These)
+
+1. **Automatic LLM Interaction Tracking** ⭐⭐⭐⭐⭐
+   - **Unique in market** - No other framework provides this
+   - **High value** - Complete cost/quality visibility
+   - **Already implemented** - Working production feature
+
+2. **Simple API + Production Features** ⭐⭐⭐⭐⭐
+   - **Rare combination** - Most tools choose one or the other
+   - **3-line usage** - Delivered and working
+   - **Production-ready** - Middleware, retry, pooling built-in
+
+3. **Provider-Agnostic Design** ⭐⭐⭐⭐
+   - **Future-proofs** user investments
+   - **Competitive advantage** vs OpenAI Evals
+   - **6 providers supported** - OpenAI, Anthropic, Google, Groq, Mistral, Cohere
+
+### Scope Revision Rationale
+
+**What We DON'T Compete On:**
+- ❌ **Feature Count** - DeepEval has 15+ evaluators (we focus on 5-7 quality evaluators)
+- ❌ **Specialized Integrations** - Streaming, storage backends (adds complexity without core value)
+- ❌ **UI/Dashboards** - Infrastructure-focused, not UI-focused
+
+**What We Compete On:**
+- ✅ **Simplicity** - 3 lines vs 30+ (LangChain)
+- ✅ **Observability** - Automatic tracking (UNIQUE)
+- ✅ **Production-Ready** - Built-in retry, pooling, middleware
+- ✅ **Provider-Agnostic** - Switch providers easily
+
+**Result:** 4-5 months to v1.0 (vs 7 months) with clearer focus and higher success probability.
+
+### Deferred Features (Detailed Rationale)
+
+**Storage Backends** ⏸️
+- **Value:** Low (memory sufficient for MVP)
+- **Complexity:** Medium (Redis, File backends require maintenance)
+- **User Workaround:** Users can persist results themselves
+- **Timeline:** Defer to Phase 2.0 or community
+
+**Quality Assurance Tools** ⏸️
+- **Value:** High but not blocking (differentiator for Phase 2.0)
+- **Complexity:** High (labeled datasets, statistical rigor)
+- **User Workaround:** Manual validation for now
+- **Timeline:** Defer to Phase 2.0 or separate project
+
+**Streaming Support** ⏸️
+- **Value:** Low-Medium (niche use case)
+- **Complexity:** High (ByteWax learning curve, state management)
+- **User Workaround:** Manual integration possible
+- **Timeline:** Defer indefinitely or community contribution
+
+**Exotic Evaluators** ⏸️
+- **Value:** Medium (nice-to-have after core 5-7)
+- **Complexity:** Medium per evaluator
+- **User Workaround:** Registry enables custom evaluators
+- **Timeline:** Community contributions or Phase 2.0
 
 ---
 
@@ -344,48 +412,47 @@ print(f"Winner: {comparison.winner}")
 
 ---
 
-## Phase 4: Storage & Batch Operations ⏳ PLANNED
+## Phase 4: Batch Evaluation ⏳ PLANNED (Revised Scope)
 
-**Duration:** 2 weeks (Dec 27 - Jan 9, 2026)
+**Duration:** 1 week (reduced from 2 weeks)
 **Status:** ⏳ Planned
-**Goal:** Storage backends and batch processing
+**Goal:** Batch evaluation API for production scale
+
+**Note:** Storage backends deferred to Phase 2.0 or community. Focus on batch evaluation only.
 
 ### Objectives
-1. Implement storage backends
-2. Add batch evaluation
-3. Result serialization and caching
+1. Add batch evaluation API
+2. Parallel processing with asyncio.gather
+3. Error handling for partial failures
+4. Progress tracking
 
 ### Deliverables
 
-#### Storage Backends
-- [ ] StorageBackend protocol (done in Phase 1, implement now)
-- [ ] MemoryStorage (in-memory LRU cache)
-- [ ] FileStorage (JSON persistence)
-- [ ] RedisStorage (distributed caching)
-- [ ] Result serialization/deserialization
-
 #### Batch Operations
 - [ ] batch_evaluate() API function
-- [ ] Parallel processing of multiple outputs
-- [ ] Progress tracking
+- [ ] Parallel processing of multiple outputs (asyncio.gather)
+- [ ] Progress tracking (optional callback)
 - [ ] Error handling for partial failures
 - [ ] Result aggregation
+- [ ] Example: batch_evaluation_example.py
 
-#### Optimizations
-- [ ] Connection pooling (already done, optimize)
-- [ ] Request batching
-- [ ] Result streaming (async iterator)
+#### ⏸️ DEFERRED: Storage Backends
+- ⏸️ MemoryStorage (deferred to Phase 2.0)
+- ⏸️ FileStorage (deferred to Phase 2.0)
+- ⏸️ RedisStorage (deferred to Phase 2.0)
+- ⏸️ Result serialization (users can handle)
+
+**Rationale:** Memory sufficient for MVP. Users can persist results themselves. Reduces complexity.
 
 ### Success Criteria
-- ✅ 3 storage backends working
 - ✅ batch_evaluate() handles 100+ items
 - ✅ Parallel processing faster than sequential
 - ✅ Partial failure handling tested
-- ✅ Storage integration tests
+- ✅ Example demonstrating batch usage
 
 ### Risks
-- **Redis dependency:** Adds infrastructure requirement
 - **Batch complexity:** Error handling edge cases
+- **Memory usage:** Large batches may require optimization
 
 ### Dependencies
 - Phase 2.5 complete
@@ -393,11 +460,13 @@ print(f"Winner: {comparison.winner}")
 
 ---
 
-## Phase 5: Core Evaluators ⏳ PLANNED
+## Phase 5: Core Evaluators ⏳ PLANNED (Revised Scope)
 
-**Duration:** 6 weeks (Jan 10 - Feb 20, 2026)
+**Duration:** 4-5 weeks (reduced from 6 weeks)
 **Status:** ⏳ Planned
-**Goal:** Build 6-8 production evaluators
+**Goal:** Build 5-7 production evaluators (focused on high-value)
+
+**Strategic Focus:** Quality over quantity. Focus on general-purpose, high-demand evaluators.
 
 ### Objectives
 1. Implement core evaluators based on market demand
@@ -442,15 +511,22 @@ print(f"Winner: {comparison.winner}")
   - Temporal consistency
   - Output: score, contradictions, logical_issues
 
-#### Week 6: Context Relevance (RAG)
-- [ ] **ContextRelevanceEvaluator** (1 week)
-  - Retrieved context quality assessment
-  - Useful vs. irrelevant chunks
-  - Coverage scoring
-  - Output: score, useful_chunks, irrelevant_chunks, coverage_score
+#### ⏸️ DEFERRED: Context Relevance
+- ⏸️ **ContextRelevanceEvaluator** - Deferred (overlaps with RelevanceEvaluator)
+
+**Priority Order (Keep):**
+1. ✅ **FactualityEvaluator** (Week 1) - Highest demand, RAG validation
+2. ✅ **RelevanceEvaluator** (Week 2) - Query-output alignment
+3. ✅ **GroundednessEvaluator** (Week 3) - RAG source attribution
+4. ✅ **ConsistencyEvaluator** (Week 4) - Self-contradiction detection
+5. ⚠️ **ToxicityEvaluator** (Week 5) - If time permits (depends on Perspective API)
+
+**Deferred:**
+- ⏸️ ContextRelevanceEvaluator (overlaps with Relevance)
+- ⏸️ Specialized evaluators (10+) - Community can build via registry
 
 ### Success Criteria
-- ✅ 6 evaluators fully implemented
+- ✅ 5-7 evaluators fully implemented (focus on quality)
 - ✅ Each evaluator >80% test coverage
 - ✅ Documentation for each evaluator
 - ✅ Examples for each use case
@@ -468,13 +544,70 @@ print(f"Winner: {comparison.winner}")
 
 ---
 
-## Phase 6: Evaluation Quality Assurance ⏳ PLANNED
+## Phase 6: Polish & Release ⏳ PLANNED (Moved Up)
 
-**Duration:** 2-3 weeks (Feb 21 - Mar 13, 2026)
+**Duration:** 2 weeks
 **Status:** ⏳ Planned
+**Goal:** Production release preparation
+
+**Note:** Moved up from Phase 7-9 to enable earlier adoption. Critical for community growth.
+
+### Objectives
+1. Publish to PyPI
+2. Set up CI/CD pipeline
+3. Create documentation site
+4. Prepare release materials
+
+### Deliverables
+
+#### PyPI Package
+- [ ] Finalize package metadata
+- [ ] Create PyPI account
+- [ ] Write release checklist
+- [ ] Publish 0.1.0-alpha
+
+#### CI/CD Pipeline
+- [ ] GitHub Actions workflow
+- [ ] Automated testing
+- [ ] Code quality checks
+- [ ] Release automation
+
+#### Documentation Site
+- [ ] Set up MkDocs or Sphinx
+- [ ] Auto-generate API reference
+- [ ] Host on GitHub Pages or ReadTheDocs
+- [ ] Link from README
+
+#### Release Materials
+- [ ] CHANGELOG.md
+- [ ] Release notes
+- [ ] Migration guide (if needed)
+- [ ] Announcement post
+
+### Success Criteria
+- ✅ Package on PyPI (pip install arbiter works)
+- ✅ CI/CD pipeline running
+- ✅ Documentation site live
+- ✅ Release checklist complete
+
+### Dependencies
+- Phase 5 complete (evaluators done)
+
+---
+
+## ⏸️ DEFERRED Phases
+
+### Phase 6 (Original): Evaluation Quality Assurance ⏸️ DEFERRED
+
+**Duration:** 2-3 weeks
+**Status:** ⏸️ Deferred to Phase 2.0 or community
 **Goal:** Tools to validate evaluator quality
 
-**Differentiator:** Only framework with built-in quality assurance
+**Rationale:**
+- High complexity (labeled datasets, statistical rigor)
+- Can be community-driven
+- Not blocking for v1.0
+- **New Timeline:** Phase 2.0 or separate project
 
 ### Objectives
 1. Build evaluator validation tools
@@ -534,98 +667,47 @@ print(f"Winner: {comparison.winner}")
 
 ---
 
-## Phase 7: Streaming Support ⏳ FUTURE
+### Phase 7: Streaming Support ⏸️ DEFERRED
 
-**Duration:** 1 week (Mar 14-20, 2026)
-**Status:** ⏳ Future
+**Duration:** 1 week
+**Status:** ⏸️ Deferred indefinitely
 **Goal:** ByteWax integration for streaming data
 
-### Objectives
-1. Design streaming adapter interface
-2. Implement ByteWax adapter
-3. Create streaming examples
+**Rationale:**
+- Niche use case (most users don't need it)
+- High complexity (ByteWax learning curve)
+- Users can integrate manually
+- **New Timeline:** Indefinite defer or community contribution
 
-### Deliverables
-
-#### ByteWax Integration
-- [ ] StreamingAdapter protocol
-- [ ] ByteWaxAdapter implementation
-  - Input operators
-  - Output operators
-  - State management
-- [ ] Streaming examples
-  - Kafka → Arbiter → Sink
-  - File stream processing
-  - Real-time evaluation
-
-### Success Criteria
-- ✅ ByteWax adapter works
-- ✅ Handles 1000+ items/sec
-- ✅ State management tested
-- ✅ Examples provided
-
-### Risks
-- **ByteWax complexity:** Learning curve
-- **Performance:** May require optimization
-
-### Dependencies
-- Phase 4 complete (batch operations foundation)
+**Original Plan:** ByteWax adapter, streaming examples, Kafka integration
 
 ---
 
-## Phase 8: Testing & Documentation ⏳ FUTURE
+### Phase 8: Testing & Documentation ⏸️ DEFERRED
 
-**Duration:** 2 weeks (Mar 21 - Apr 3, 2026)
-**Status:** ⏳ Future
+**Duration:** 2 weeks
+**Status:** ⏸️ Deferred (integrated into Phase 6)
 **Goal:** Comprehensive testing and documentation
 
-### Objectives
-1. Achieve >80% test coverage
-2. Complete API documentation
-3. Write user guides
-4. Create architecture docs
+**Rationale:**
+- Testing already at >80% coverage (maintain current)
+- Documentation integrated into Phase 6 (Polish & Release)
+- **New Timeline:** Integrated into Phase 6
 
-### Deliverables
-
-#### Testing
-- [ ] Unit tests (all modules >80% coverage)
-- [ ] Integration tests (end-to-end flows)
-- [ ] Performance tests (benchmarks)
-- [ ] Load tests (concurrent processing)
-
-#### Documentation
-- [ ] API reference (all public functions)
-- [ ] User guides
-  - Installation
-  - Quick start
-  - Evaluator guide
-  - Configuration
-  - Advanced patterns
-- [ ] Architecture documentation
-  - Design decisions
-  - Component interactions
-  - Extension points
-- [ ] Examples (15+ comprehensive examples)
-
-### Success Criteria
-- ✅ >80% test coverage achieved
-- ✅ All public APIs documented
-- ✅ User guides complete
-- ✅ Architecture documented
-
-### Risks
-- **Time:** Documentation takes longer than expected
-
-### Dependencies
-- Phases 1-7 complete
+**Original Plan:** Unit/integration tests, API reference, user guides, architecture docs
 
 ---
 
-## Phase 9: Polish & Release ⏳ FUTURE
+### Phase 9 (Original): Polish & Release ⏸️ MOVED UP
 
-**Duration:** 2 weeks (Apr 4-17, 2026)
-**Status:** ⏳ Future
+**Duration:** 2 weeks
+**Status:** ⏸️ Moved up to Phase 6
 **Goal:** Prepare for v1.0 release
+
+**Rationale:**
+- Critical for adoption (PyPI, CI/CD, docs)
+- Should happen sooner, not later
+- **New Timeline:** Phase 6 (moved up from Phase 9)
 
 ### Objectives
 1. Set up CI/CD

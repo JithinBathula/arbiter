@@ -417,23 +417,57 @@ result = await evaluate(evaluators=["my_evaluator"])  # Now works!
 
 ### Overall Phase 2.5 Progress: ~60%
 
-**Completed:**
+| Task | Estimated | Actual | Status |
+|------|-----------|--------|--------|
+| CustomCriteriaEvaluator | 2-3 days | 1 day | ✅ Ahead |
+| PairwiseComparisonEvaluator | 2-3 days | 1 day | ✅ Ahead |
+| Error Handling | 1 day | 1 day | ✅ On Track |
+| Documentation + Examples | 5-7 days | ~3 days | ⏳ 60% Complete |
+| **Total** | **10-13 days** | **~6 days** | **⏳ On Track** |
+
+**Completed (60%):**
 - ✅ CustomCriteriaEvaluator (Week 1) - Single & multi-criteria modes
 - ✅ PairwiseComparisonEvaluator (Week 2) - A/B testing support
 - ✅ Multi-Evaluator Error Handling (Week 2-3) - Partial results & graceful degradation
-- ✅ Critical Examples (Week 2-3) - Multiple evaluators, middleware, provider switching
-- ✅ Test Coverage Expansion (Week 2-3) - Semantic, API, Base, Models tests (~165+ tests)
+- ✅ Critical Examples (Week 2-3) - 8/10 examples done
+  - ✅ basic_evaluation.py
+  - ✅ custom_criteria_example.py
+  - ✅ pairwise_comparison_example.py
+  - ✅ multiple_evaluators.py
+  - ✅ middleware_usage.py
+  - ✅ error_handling_example.py
+  - ✅ provider_switching.py
+  - ✅ evaluator_registry_example.py
+- ✅ Test Coverage Expansion (Week 2-3) - ~165+ tests across 8 files
+  - ✅ test_semantic.py (25 tests)
+  - ✅ test_api.py (24 tests)
+  - ✅ test_base.py (22 tests)
+  - ✅ test_models.py (40+ tests)
+  - ✅ test_custom_criteria.py (18 tests)
+  - ✅ test_pairwise.py (25 tests)
+  - ✅ test_error_handling.py (12 tests)
+  - ✅ test_registry.py (20+ tests)
 - ✅ Evaluator Registry & Validation (Week 2-3) - Registry system with custom evaluator support
+- ✅ Test Infrastructure Refactoring (Nov 12) - Eliminated ~158 lines of duplicate code
 
-**In Progress:**
-- Documentation & examples expansion (Week 2-3)
+**Remaining (40%):**
+- ⏳ 2 more examples (batch pattern, advanced config)
+- ⏳ API reference documentation (Sphinx/MkDocs setup)
+- ⏳ User guides
+- ⏳ Troubleshooting guide
 
 **Blocked:**
 - None
 
+**Bonus Work Completed:**
+- ✅ Test infrastructure refactoring (conftest.py, eliminated duplication)
+- ✅ Registry system (significantly improves extensibility)
+- ✅ Documentation generation (test-improvements.md, multiple-evaluators.md, evaluator-registry.md)
+
 **Next Up:**
-- Remaining examples (batch, advanced config, RAG pattern, production setup, etc.)
-- API documentation (API Reference Documentation, User Guides, Troubleshooting Guide)
+- Remaining examples (batch, advanced config)
+- API documentation (Sphinx/MkDocs setup, API reference)
+- User guides (quickstart, installation, custom evaluators)
 
 ---
 
