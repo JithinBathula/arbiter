@@ -61,8 +61,8 @@ Rules → Architecture → Status → Request
 **Example:**
 - **Global:** "Never use placeholders or TODO comments"
 - **Project:** "Use template method pattern for evaluators"
-- **Running:** "Currently implementing CustomCriteriaEvaluator"
-- **Prompt:** "Add multi-criteria support to CustomCriteriaEvaluator"
+- **Running:** "Phase 2.5: 60% complete - Registry system done, documentation next"
+- **Prompt:** "Create batch evaluation example"
 
 ---
 
@@ -85,18 +85,28 @@ arbiter/
 │   │   ├── models.py           # Pydantic data models
 │   │   ├── monitoring.py       # Performance metrics
 │   │   ├── retry.py            # Exponential backoff retry
+│   │   ├── registry.py         # Evaluator registry system
 │   │   ├── type_defs.py        # TypedDict definitions
-│   │   └── types.py            # Provider, MetricType, StorageType enums
+│   │   └── types.py            # Provider, MetricType, StorageType, EvaluatorName enums
 │   ├── evaluators/             # Evaluation implementations
 │   │   ├── __init__.py
 │   │   ├── base.py             # BasePydanticEvaluator template
-│   │   └── semantic.py         # SemanticEvaluator (implemented)
+│   │   ├── semantic.py         # SemanticEvaluator (implemented)
+│   │   ├── custom_criteria.py  # CustomCriteriaEvaluator (implemented)
+│   │   └── pairwise.py         # PairwiseComparisonEvaluator (implemented)
 │   ├── storage/                # Storage backends (Phase 4)
 │   │   └── __init__.py
 │   └── tools/                  # Utilities
 │       └── __init__.py
 ├── examples/
-│   └── basic_evaluation.py     # Comprehensive usage example
+│   ├── basic_evaluation.py           # Basic semantic evaluation
+│   ├── custom_criteria_example.py   # Domain-specific criteria
+│   ├── pairwise_comparison_example.py # A/B testing
+│   ├── multiple_evaluators.py       # Combining evaluators
+│   ├── middleware_usage.py          # Logging, metrics, caching
+│   ├── error_handling_example.py    # Partial results & errors
+│   ├── provider_switching.py        # Multi-provider support
+│   └── evaluator_registry_example.py # Custom evaluator registration
 ├── tests/
 │   ├── unit/
 │   └── integration/
@@ -118,9 +128,11 @@ arbiter/
 #### `api.py` - Public API
 **Purpose:** Simple entry point for users
 **Key Functions:**
-- `evaluate()` - Main evaluation function
+- `evaluate()` - Main evaluation function (supports multiple evaluators)
+- `compare()` - Pairwise comparison function
 - Auto-manages LLM clients
 - Integrates middleware pipeline
+- Uses evaluator registry for validation
 
 #### `core/` - Infrastructure
 **Purpose:** Production-grade foundation
@@ -128,7 +140,8 @@ arbiter/
 - **llm_client.py:** Provider-agnostic LLM interface (OpenAI, Anthropic, Google, Groq)
 - **llm_client_pool.py:** Connection pooling with health checks
 - **middleware.py:** Logging, metrics, caching, rate limiting
-- **models.py:** EvaluationResult, Score, Metric, LLMInteraction
+- **models.py:** EvaluationResult, ComparisonResult, Score, Metric, LLMInteraction
+- **registry.py:** Evaluator registry system (AVAILABLE_EVALUATORS, register_evaluator)
 - **exceptions.py:** ArbiterError hierarchy (8 types)
 - **retry.py:** Exponential backoff with 3 presets
 - **monitoring.py:** PerformanceMetrics, PerformanceMonitor
@@ -137,9 +150,9 @@ arbiter/
 **Purpose:** Evaluator implementations
 **Pattern:** Template Method (BasePydanticEvaluator)
 **Current:**
-- SemanticEvaluator ✅
-- CustomCriteriaEvaluator ✅ (Phase 2.5)
-- PairwiseComparisonEvaluator ✅ (Phase 2.5)
+- SemanticEvaluator ✅ - Semantic similarity evaluation
+- CustomCriteriaEvaluator ✅ - Domain-specific criteria (single & multi-criteria)
+- PairwiseComparisonEvaluator ✅ - A/B testing and model comparison
 **Planned:**
 - FactualityEvaluator (Phase 5)
 - RelevanceEvaluator (Phase 5)
