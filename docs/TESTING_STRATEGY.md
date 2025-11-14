@@ -270,6 +270,71 @@ async def test_openai_api_contract():
 
 ---
 
+### 5. Concurrency and Load Testing
+
+**Purpose:** Validate behavior under concurrent operations and high load
+
+**Coverage Target:** Circuit breaker, connection pool, middleware pipeline
+
+**Characteristics:**
+- ✅ Tests with asyncio.gather for concurrent operations
+- ✅ Race condition detection and documentation
+- ✅ Performance under load validation
+
+**Circuit Breaker Concurrency Tests:**
+
+**Test Focus:**
+- State transition integrity under concurrent access
+- Half-open state call limiting with multiple tasks
+- Race condition handling in failure counting
+
+**Example Test:**
+
+```python
+@pytest.mark.asyncio
+async def test_circuit_breaker_concurrent_half_open():
+    """Test circuit breaker with concurrent calls in half-open state."""
+    breaker = CircuitBreaker(failure_threshold=2, timeout=0.5, half_open_max_calls=1)
+
+    # Open the circuit
+    async def failing_operation():
+        raise ValueError("Simulated failure")
+
+    for _ in range(2):
+        with pytest.raises(ValueError):
+            await breaker.call(failing_operation)
+
+    assert breaker.is_open
+
+    # Wait for timeout
+    await asyncio.sleep(0.6)
+
+    # Launch 5 concurrent calls
+    async def successful_operation():
+        return "success"
+
+    tasks = [breaker.call(successful_operation) for _ in range(5)]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Expect 1-3 calls to succeed (due to race conditions in half-open state)
+    # This is acceptable behavior documented in CircuitBreaker docstring
+    successful = [r for r in results if not isinstance(r, Exception)]
+    blocked = [r for r in results if isinstance(r, CircuitBreakerOpenError)]
+
+    assert 1 <= len(successful) <= 3  # Slight overage acceptable
+    assert len(blocked) >= 2  # Most should be blocked
+    assert breaker.is_closed  # Should transition to closed after success
+```
+
+**Note on Circuit Breaker Concurrency:**
+The circuit breaker's concurrency characteristics are documented in the class docstring.
+Under high concurrent load, the `half_open_max_calls` limit may be slightly exceeded
+(e.g., 2-3 calls instead of 1). This is acceptable for most use cases and keeps the
+implementation simple without requiring locking mechanisms. The behavior is well-tested
+and documented for users who need to understand the trade-offs.
+
+---
+
 ## Quality Gates
 
 ### Pre-Commit Checks

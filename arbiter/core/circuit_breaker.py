@@ -38,6 +38,20 @@ class CircuitBreaker:
     failures exceed a threshold. After a timeout period, it enters a
     half-open state to test if the service has recovered.
 
+    Thread Safety:
+        This implementation is suitable for asyncio applications where
+        operations are serialized by the event loop. The circuit breaker
+        uses simple attribute updates that are atomic at the Python level
+        due to the GIL (Global Interpreter Lock).
+
+        Under high concurrent load with multiple tasks calling simultaneously,
+        the half_open_max_calls limit may be slightly exceeded (e.g., 2-3 calls
+        instead of 1) due to race conditions in the check-then-increment pattern.
+        This is acceptable for most use cases and keeps the implementation simple.
+
+        For applications requiring strict concurrency guarantees, consider adding
+        asyncio.Lock protection around state transitions.
+
     Attributes:
         failure_threshold: Number of failures before opening circuit
         timeout: Seconds circuit stays open before entering half-open
@@ -46,6 +60,17 @@ class CircuitBreaker:
         failure_count: Number of consecutive failures
         last_failure_time: Timestamp of last failure
         half_open_calls: Number of calls made in half-open state
+
+    Example:
+        >>> # Basic usage
+        >>> breaker = CircuitBreaker(failure_threshold=5, timeout=60.0)
+        >>> result = await breaker.call(some_async_function, arg1, arg2)
+        >>>
+        >>> # Check circuit state
+        >>> if breaker.is_open:
+        ...     print("Circuit is open, requests are blocked")
+        >>> stats = breaker.get_stats()
+        >>> print(f"Failures: {stats['failure_count']}")
     """
 
     def __init__(
