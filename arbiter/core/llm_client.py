@@ -58,6 +58,7 @@ from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models import ModelSettings
 
+from .circuit_breaker import CircuitBreaker
 from .exceptions import ModelProviderError
 from .retry import RETRY_STANDARD, with_retry
 from .types import Provider
@@ -162,11 +163,20 @@ class LLMClient:
         model: str,
         temperature: float = 0.7,
         api_key: Optional[str] = None,
+        circuit_breaker: Optional[CircuitBreaker] = None,
     ):
         self.provider = provider
         self.model = model
         self.temperature = temperature
         self._api_key = api_key or self._get_api_key(provider)
+
+        # Initialize circuit breaker with default settings if not provided
+        # Can be disabled by passing circuit_breaker=None explicitly
+        self.circuit_breaker = circuit_breaker if circuit_breaker is not None else CircuitBreaker(
+            failure_threshold=5,
+            timeout=60.0,
+            half_open_max_calls=1,
+        )
 
         # For OpenAI-compatible providers
         if provider in [Provider.OPENAI, Provider.GROQ]:
@@ -264,15 +274,17 @@ class LLMClient:
             ),
         )
 
-    @with_retry(RETRY_STANDARD)
-    async def complete(
-        self, messages: List[Dict[str, str]], **kwargs: Any
+    async def _execute_completion(
+        self, provider_model: str, typed_messages: List[ChatCompletionMessageParam], **kwargs: Any
     ) -> LLMResponse:
-        """Complete a conversation with the LLM.
+        """Internal method to execute the actual API call.
+
+        This method is separated to allow circuit breaker wrapping.
 
         Args:
-            messages: List of conversation messages
-            **kwargs: Additional parameters to pass to the API
+            provider_model: Provider-specific model name
+            typed_messages: Typed list of messages
+            **kwargs: Additional API parameters
 
         Returns:
             Standardized LLM response
@@ -280,11 +292,7 @@ class LLMClient:
         Raises:
             ModelProviderError: If the API call fails
         """
-        provider_model = self._get_provider_model()
-
         try:
-            # Cast messages to the expected type
-            typed_messages = cast(List[ChatCompletionMessageParam], messages)
             response = await self.client.chat.completions.create(
                 model=provider_model,
                 messages=typed_messages,
@@ -313,6 +321,44 @@ class LLMClient:
                 raise ModelProviderError(
                     f"LLM API error: {e!s}", details=details
                 ) from e
+
+    @with_retry(RETRY_STANDARD)
+    async def complete(
+        self, messages: List[Dict[str, str]], **kwargs: Any
+    ) -> LLMResponse:
+        """Complete a conversation with the LLM with circuit breaker protection.
+
+        The circuit breaker prevents cascading failures by temporarily blocking
+        requests when too many failures occur. This protects against LLM provider
+        outages and degraded performance.
+
+        Args:
+            messages: List of conversation messages
+            **kwargs: Additional parameters to pass to the API
+
+        Returns:
+            Standardized LLM response
+
+        Raises:
+            ModelProviderError: If the API call fails
+            CircuitBreakerOpenError: If circuit breaker is open
+        """
+        provider_model = self._get_provider_model()
+
+        # Cast messages to the expected type
+        typed_messages = cast(List[ChatCompletionMessageParam], messages)
+
+        # Wrap API call with circuit breaker if available
+        if self.circuit_breaker:
+            return await self.circuit_breaker.call(
+                self._execute_completion,
+                provider_model,
+                typed_messages,
+                **kwargs,
+            )
+        else:
+            # No circuit breaker, call directly
+            return await self._execute_completion(provider_model, typed_messages, **kwargs)
 
 
 class LLMManager:

@@ -64,7 +64,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any, Callable, Dict, List, Optional, cast
 
-from .models import EvaluationResult
+from .models import ComparisonResult, EvaluationResult
 from .type_defs import MiddlewareContext
 
 logger = logging.getLogger(__name__)
@@ -597,6 +597,103 @@ class MiddlewarePipeline:
             )
 
         return await chain(0, output, reference)
+
+    async def execute_comparison(
+        self,
+        output_a: str,
+        output_b: str,
+        criteria: Optional[str],
+        reference: Optional[str],
+        final_handler: Callable[
+            [str, str, Optional[str], Optional[str]], Any
+        ],
+        context: Optional[MiddlewareContext] = None,
+    ) -> ComparisonResult:
+        """Execute middleware pipeline for pairwise comparison.
+
+        This method adapts the pairwise comparison signature to work with
+        the existing middleware infrastructure. Middleware can check the
+        context for `is_pairwise_comparison=True` to detect and handle
+        pairwise operations specially if needed.
+
+        The adapter works by:
+        1. Packaging both outputs into context for middleware access
+        2. Passing a formatted string to middleware for logging/tracking
+        3. Calling the final pairwise comparison handler
+        4. Returning the ComparisonResult
+
+        Args:
+            output_a: First output to compare
+            output_b: Second output to compare
+            criteria: Optional comparison criteria
+            reference: Optional reference context
+            final_handler: The actual comparison function
+            context: Shared context between middleware
+
+        Returns:
+            ComparisonResult from the pipeline
+
+        Example:
+            >>> pipeline = MiddlewarePipeline([
+            ...     LoggingMiddleware(),
+            ...     MetricsMiddleware()
+            ... ])
+            >>> result = await pipeline.execute_comparison(
+            ...     output_a="First output",
+            ...     output_b="Second output",
+            ...     criteria="accuracy, clarity",
+            ...     reference="Reference text",
+            ...     final_handler=compare_impl
+            ... )
+        """
+        if context is None:
+            context = {}  # type: ignore
+
+        # Mark this as a pairwise comparison for middleware
+        context["is_pairwise_comparison"] = True  # type: ignore
+        context["pairwise_data"] = {  # type: ignore
+            "output_a": output_a,
+            "output_b": output_b,
+            "criteria": criteria,
+        }
+
+        # Create formatted output for middleware logging
+        # This allows existing middleware to work without modification
+        formatted_output = (
+            f"PAIRWISE COMPARISON:\n"
+            f"Output A: {output_a[:100]}...\n"
+            f"Output B: {output_b[:100]}..."
+        )
+
+        # Build the chain - adapter pattern
+        async def chain(
+            index: int, current_output: str, current_reference: Optional[str]
+        ) -> Any:
+            if index >= len(self.middleware):
+                # End of middleware chain, call final pairwise handler
+                # Use original outputs, not formatted version
+                return await final_handler(output_a, output_b, criteria, reference)
+
+            # Call current middleware with formatted output
+            current = self.middleware[index]
+
+            # Middleware processes the formatted output but we preserve pairwise data
+            result = await current.process(
+                current_output,
+                current_reference,
+                lambda o, r: chain(index + 1, o, r),
+                context,  # type: ignore
+            )
+
+            # For pairwise, middleware returns EvaluationResult but we need ComparisonResult
+            # The final_handler will return the correct type
+            return result
+
+        # Execute the chain - the formatted output is for middleware visibility only
+        result = await chain(0, formatted_output, reference)
+
+        # Return the ComparisonResult from final_handler
+        return cast(ComparisonResult, result)
 
 
 @asynccontextmanager

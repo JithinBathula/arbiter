@@ -13,7 +13,8 @@ ArbiterError (base)
 ├── StorageError - Storage backend failures
 ├── PluginError - Plugin loading/execution failures
 ├── ValidationError - Input validation failures
-└── TimeoutError - Operation timeout
+├── TimeoutError - Operation timeout
+└── CircuitBreakerOpenError - Circuit breaker blocking requests
 ```
 
 ## Usage:
@@ -39,6 +40,7 @@ __all__ = [
     "PluginError",
     "ValidationError",
     "TimeoutError",
+    "CircuitBreakerOpenError",
 ]
 
 
@@ -195,5 +197,33 @@ class TimeoutError(ArbiterError):
         >>> raise TimeoutError(
         ...     "Evaluation timed out",
         ...     details={"timeout_seconds": 30, "elapsed_seconds": 35}
+        ... )
+    """
+
+
+class CircuitBreakerOpenError(ArbiterError):
+    """Raised when circuit breaker is open and blocking requests.
+
+    This exception indicates that too many failures have occurred and
+    the circuit breaker has entered the OPEN state to prevent cascading
+    failures. Requests are temporarily blocked until the circuit enters
+    HALF_OPEN state for recovery testing.
+
+    This is a temporary error - clients should wait and retry after
+    the circuit breaker timeout period.
+
+    Examples:
+        - LLM provider experiencing outage
+        - Multiple consecutive API failures
+        - Provider rate limiting across multiple requests
+
+    Example:
+        >>> raise CircuitBreakerOpenError(
+        ...     "Circuit breaker is open",
+        ...     details={
+        ...         "failure_count": 5,
+        ...         "retry_after": 60,
+        ...         "last_failure": "API timeout"
+        ...     }
         ... )
     """

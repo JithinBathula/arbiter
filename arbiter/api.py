@@ -383,28 +383,27 @@ async def compare(
     # If middleware is provided, use it to wrap the comparison
     if middleware:
 
-        async def _compare_core(output_a: str, output_b: str) -> ComparisonResult:
+        async def _compare_final_handler(
+            out_a: str, out_b: str, crit: Optional[str], ref: Optional[str]
+        ) -> ComparisonResult:
+            """Final handler for middleware pipeline."""
             return await _compare_impl(
-                output_a=output_a,
-                output_b=output_b,
-                criteria=criteria,
-                reference=reference,
+                output_a=out_a,
+                output_b=out_b,
+                criteria=crit,
+                reference=ref,
                 llm_client=llm_client,
                 model=model,
                 provider=provider,
             )
 
-        # Middleware expects (output, reference) signature, but we have (output_a, output_b)
-        # We'll need to adapt this - for now, run directly
-        # TODO: Update middleware to support pairwise comparison signature
-        return await _compare_impl(
+        # Use the middleware pipeline's execute_comparison adapter
+        return await middleware.execute_comparison(
             output_a=output_a,
             output_b=output_b,
             criteria=criteria,
             reference=reference,
-            llm_client=llm_client,
-            model=model,
-            provider=provider,
+            final_handler=_compare_final_handler,
         )
 
     # No middleware, run directly

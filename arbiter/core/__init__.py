@@ -8,10 +8,13 @@ This module contains the fundamental components:
 - Plugin infrastructure
 - Exception handling
 - Retry logic
+- Circuit breaker pattern
 """
 
+from .circuit_breaker import CircuitBreaker, CircuitState
 from .exceptions import (
     ArbiterError,
+    CircuitBreakerOpenError,
     ConfigurationError,
     EvaluatorError,
     ModelProviderError,
@@ -55,6 +58,10 @@ __all__ = [
     "StorageError",
     "PluginError",
     "TimeoutError",
+    "CircuitBreakerOpenError",
+    # Circuit Breaker
+    "CircuitBreaker",
+    "CircuitState",
     # Models
     "EvaluationResult",
     "ComparisonResult",
