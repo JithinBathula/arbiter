@@ -99,7 +99,7 @@ class SemanticEvaluator(BasePydanticEvaluator):
     @property
     def name(self) -> str:
         """Return evaluator identifier."""
-        return "semantic_similarity"
+        return "semantic"
 
     def _get_system_prompt(self) -> str:
         """Get system prompt defining semantic evaluation approach."""
@@ -186,7 +186,7 @@ even if expressed differently. Provide a detailed analysis."""
         full_explanation = "".join(explanation_parts)
 
         return Score(
-            name="semantic_similarity",
+            name=self.name,  # Use evaluator's name property for consistency
             value=semantic_response.score,
             confidence=semantic_response.confidence,
             explanation=full_explanation,
