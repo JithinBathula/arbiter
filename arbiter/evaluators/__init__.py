@@ -3,7 +3,8 @@
 This module provides evaluators for different aspects of LLM outputs:
 - Semantic similarity between output and reference
 - Custom criteria evaluation (domain-specific quality checks)
-- Factuality checking (planned)
+- Factuality checking and hallucination detection
+- Pairwise comparison for A/B testing
 - Consistency evaluation (planned)
 - Relevance scoring (planned)
 
@@ -17,6 +18,7 @@ from .custom_criteria import (
     CustomCriteriaResponse,
     MultiCriteriaResponse,
 )
+from .factuality import FactualityEvaluator, FactualityResponse
 from .pairwise import (
     AspectComparison,
     PairwiseComparisonEvaluator,
@@ -32,6 +34,8 @@ __all__ = [
     "CustomCriteriaEvaluator",
     "CustomCriteriaResponse",
     "MultiCriteriaResponse",
+    "FactualityEvaluator",
+    "FactualityResponse",
     "PairwiseComparisonEvaluator",
     "PairwiseResponse",
     "AspectComparison",
