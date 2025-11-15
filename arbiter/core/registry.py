@@ -51,10 +51,15 @@ def _initialize_builtin_evaluators() -> None:
     It registers all built-in evaluators that are available by default.
     """
     # Import here to avoid circular dependencies
-    from ..evaluators import CustomCriteriaEvaluator, SemanticEvaluator
+    from ..evaluators import (
+        CustomCriteriaEvaluator,
+        FactualityEvaluator,
+        SemanticEvaluator,
+    )
 
     AVAILABLE_EVALUATORS["semantic"] = SemanticEvaluator
     AVAILABLE_EVALUATORS["custom_criteria"] = CustomCriteriaEvaluator
+    AVAILABLE_EVALUATORS["factuality"] = FactualityEvaluator
 
 
 def register_evaluator(name: str, evaluator_class: Type[BaseEvaluator]) -> None:
