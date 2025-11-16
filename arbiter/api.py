@@ -32,7 +32,7 @@ This module provides the primary entry points for evaluating LLM outputs.
 
 import logging
 import time
-from typing import Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from .core import (
     LLMClient,
@@ -43,12 +43,19 @@ from .core import (
 )
 from .core.exceptions import ArbiterError, EvaluatorError, ValidationError
 from .core.middleware import MiddlewarePipeline
-from .core.models import ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
+from .core.models import (
+    BatchEvaluationResult,
+    ComparisonResult,
+    EvaluationResult,
+    LLMInteraction,
+    Metric,
+    Score,
+)
 from .evaluators import PairwiseComparisonEvaluator
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["evaluate", "compare"]
+__all__ = ["evaluate", "compare", "batch_evaluate"]
 
 
 async def evaluate(
@@ -129,7 +136,9 @@ async def evaluate(
     # If middleware is provided, use it to wrap the evaluation
     if middleware:
 
-        async def _evaluate_core(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def _evaluate_core(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return await _evaluate_impl(
                 output=output,
                 reference=reference,
@@ -175,7 +184,9 @@ async def _evaluate_impl(
 
     # Create LLM client if not provided
     if llm_client is None:
-        llm_client = await LLMManager.get_client(provider=provider, model=model, temperature=0.0)
+        llm_client = await LLMManager.get_client(
+            provider=provider, model=model, temperature=0.0
+        )
 
     # Initialize evaluator instances using registry
     from .core.interfaces import BaseEvaluator
@@ -430,7 +441,9 @@ async def _compare_impl(
     """Internal implementation of comparison."""
     # Create LLM client if not provided
     if llm_client is None:
-        llm_client = await LLMManager.get_client(provider=provider, model=model, temperature=0.0)
+        llm_client = await LLMManager.get_client(
+            provider=provider, model=model, temperature=0.0
+        )
 
     # Create evaluator
     evaluator = PairwiseComparisonEvaluator(llm_client)
@@ -444,3 +457,229 @@ async def _compare_impl(
     )
 
     return comparison
+
+
+async def batch_evaluate(
+    items: List[Dict[str, Any]],
+    evaluators: Optional[List[str]] = None,
+    llm_client: Optional[LLMClient] = None,
+    model: str = "gpt-4o",
+    provider: Provider = Provider.OPENAI,
+    threshold: float = 0.7,
+    max_concurrency: int = 10,
+    progress_callback: Optional[
+        Callable[[int, int, Optional["EvaluationResult"]], None]
+    ] = None,
+    middleware: Optional[MiddlewarePipeline] = None,
+) -> "BatchEvaluationResult":
+    """Evaluate multiple LLM outputs in parallel with progress tracking.
+
+    Efficient batch processing while maintaining individual result fidelity.
+    Failed items return partial results without failing the entire batch.
+
+    Args:
+        items: List of evaluation items, each dict with keys:
+            - "output" (required): The LLM output to evaluate
+            - "reference" (optional): Reference text for comparison
+            - "criteria" (optional): Evaluation criteria
+        evaluators: List of evaluator names to run (default: ["semantic"])
+        llm_client: Optional pre-configured LLM client (shared across batch)
+        model: Model to use if creating new client (default: "gpt-4o")
+        provider: Provider to use if creating new client (default: OPENAI)
+        threshold: Score threshold for pass/fail (default: 0.7)
+        max_concurrency: Maximum parallel evaluations (default: 10)
+        progress_callback: Optional callback(completed, total, latest_result)
+        middleware: Optional middleware pipeline for cross-cutting concerns
+
+    Returns:
+        BatchEvaluationResult with results list, errors, and aggregate statistics.
+        Results list preserves order - None for failed items.
+
+    Raises:
+        ValidationError: If input validation fails (empty items, invalid format)
+
+    Example:
+        >>> # Basic batch evaluation
+        >>> results = await batch_evaluate(
+        ...     items=[
+        ...         {"output": "Paris is capital of France", "reference": "Paris is France's capital"},
+        ...         {"output": "Tokyo is capital of Japan", "reference": "Tokyo is Japan's capital"},
+        ...         {"output": "Berlin is capital of Germany", "reference": "Berlin is Germany's capital"},
+        ...     ],
+        ...     evaluators=["semantic"],
+        ...     model="gpt-4o-mini",
+        ...     max_concurrency=5
+        ... )
+        >>> print(f"Success: {results.successful_items}/{results.total_items}")
+        >>> print(f"Total cost: ${await results.total_llm_cost():.4f}")
+        >>>
+        >>> # With progress tracking
+        >>> def on_progress(completed, total, result):
+        ...     print(f"Progress: {completed}/{total}")
+        ...     if result:
+        ...         print(f"Latest score: {result.overall_score:.2f}")
+        >>>
+        >>> results = await batch_evaluate(
+        ...     items=[...],
+        ...     progress_callback=on_progress
+        ... )
+        >>>
+        >>> # Access individual results
+        >>> for i, result in enumerate(results.results):
+        ...     if result:
+        ...         print(f"Item {i}: {result.overall_score:.2f}")
+        ...     else:
+        ...         error = results.get_error(i)
+        ...         print(f"Item {i}: FAILED - {error['error']}")
+    """
+    # Input validation
+    if not items:
+        raise ValidationError("items list cannot be empty")
+
+    # Validate each item structure
+    for i, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise ValidationError(f"Item {i} must be a dictionary, got {type(item)}")
+        if "output" not in item:
+            raise ValidationError(f"Item {i} missing required 'output' key")
+        if not item["output"] or not str(item["output"]).strip():
+            raise ValidationError(f"Item {i} 'output' cannot be empty or whitespace")
+
+    # Delegate to implementation
+    return await _batch_evaluate_impl(
+        items=items,
+        evaluators=evaluators,
+        llm_client=llm_client,
+        model=model,
+        provider=provider,
+        threshold=threshold,
+        max_concurrency=max_concurrency,
+        progress_callback=progress_callback,
+        middleware=middleware,
+    )
+
+
+async def _batch_evaluate_impl(
+    items: List[Dict[str, Any]],
+    evaluators: Optional[List[str]] = None,
+    llm_client: Optional[LLMClient] = None,
+    model: str = "gpt-4o",
+    provider: Provider = Provider.OPENAI,
+    threshold: float = 0.7,
+    max_concurrency: int = 10,
+    progress_callback: Optional[
+        Callable[[int, int, Optional[EvaluationResult]], None]
+    ] = None,
+    middleware: Optional[MiddlewarePipeline] = None,
+) -> "BatchEvaluationResult":
+    """Internal implementation of batch evaluation."""
+    import asyncio
+
+    from .core.models import BatchEvaluationResult
+
+    start_time = time.time()
+    total_items = len(items)
+
+    # Create shared LLM client if not provided
+    if llm_client is None:
+        llm_client = await LLMManager.get_client(
+            provider=provider, model=model, temperature=0.0
+        )
+
+    # Set up concurrency control
+    semaphore = asyncio.Semaphore(max_concurrency)
+
+    # Track completion for progress callback
+    completed_count = [0]  # Use list for closure mutability
+
+    async def evaluate_item(
+        index: int, item: Dict[str, Any]
+    ) -> tuple[int, Optional[EvaluationResult], Optional[str]]:
+        """Evaluate single item with concurrency control."""
+        async with semaphore:
+            try:
+                # Extract item fields
+                output = item["output"]
+                reference = item.get("reference")
+                criteria = item.get("criteria")
+
+                # Run evaluation (reuses existing evaluate function)
+                result = await evaluate(
+                    output=output,
+                    reference=reference,
+                    criteria=criteria,
+                    evaluators=evaluators,
+                    llm_client=llm_client,
+                    model=model,
+                    provider=provider,
+                    threshold=threshold,
+                    middleware=middleware,
+                )
+
+                # Update progress
+                completed_count[0] += 1
+                if progress_callback:
+                    progress_callback(completed_count[0], total_items, result)
+
+                return (index, result, None)
+
+            except Exception as e:
+                # Track error but don't fail entire batch
+                error_msg = str(e)
+                logger.warning(
+                    f"Batch item {index} failed: {error_msg}",
+                    extra={"batch_index": index, "error_type": type(e).__name__},
+                )
+
+                # Update progress
+                completed_count[0] += 1
+                if progress_callback:
+                    progress_callback(completed_count[0], total_items, None)
+
+                return (index, None, error_msg)
+
+    # Create tasks for all items
+    tasks = [evaluate_item(i, item) for i, item in enumerate(items)]
+
+    # Run all evaluations in parallel (respecting semaphore limit)
+    results_with_indices = await asyncio.gather(*tasks)
+
+    # Build results list (preserving order, None for failures)
+    results: List[Optional[EvaluationResult]] = [None] * total_items
+    errors: List[Dict[str, Any]] = []
+    total_tokens = 0
+
+    for index, result, error_msg in results_with_indices:
+        if result:
+            results[index] = result
+            total_tokens += result.total_tokens
+        else:
+            errors.append(
+                {
+                    "index": index,
+                    "item": items[index],
+                    "error": error_msg or "Unknown error",
+                }
+            )
+
+    # Calculate statistics
+    successful_items = sum(1 for r in results if r is not None)
+    failed_items = len(errors)
+    processing_time = time.time() - start_time
+
+    return BatchEvaluationResult(
+        results=results,
+        errors=errors,
+        total_items=total_items,
+        successful_items=successful_items,
+        failed_items=failed_items,
+        processing_time=processing_time,
+        total_tokens=total_tokens,
+        metadata={
+            "evaluators": evaluators or ["semantic"],
+            "model": model,
+            "provider": provider.value if hasattr(provider, "value") else str(provider),
+            "max_concurrency": max_concurrency,
+            "threshold": threshold,
+        },
+    )

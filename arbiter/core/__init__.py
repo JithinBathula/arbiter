@@ -36,7 +36,7 @@ from .middleware import (
     RateLimitingMiddleware,
     monitor as monitor_context,
 )
-from .models import ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
+from .models import BatchEvaluationResult, ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
 from .monitoring import PerformanceMetrics, PerformanceMonitor, get_global_monitor, monitor
 from .retry import RETRY_PERSISTENT, RETRY_QUICK, RETRY_STANDARD, RetryConfig, with_retry
 from .registry import (
@@ -70,6 +70,7 @@ __all__ = [
     # Models
     "EvaluationResult",
     "ComparisonResult",
+    "BatchEvaluationResult",
     "Score",
     "Metric",
     "LLMInteraction",

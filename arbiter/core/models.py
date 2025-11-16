@@ -18,6 +18,7 @@ __all__ = [
     "LLMInteraction",
     "EvaluationResult",
     "ComparisonResult",
+    "BatchEvaluationResult",
 ]
 
 
@@ -69,7 +70,9 @@ class Score(BaseModel):
     confidence: Optional[float] = Field(
         None, ge=0.0, le=1.0, description="Confidence in this score"
     )
-    explanation: Optional[str] = Field(None, description="Human-readable explanation of the score")
+    explanation: Optional[str] = Field(
+        None, description="Human-readable explanation of the score"
+    )
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata about the score"
     )
@@ -108,11 +111,15 @@ class LLMInteraction(BaseModel):
     input_tokens: int = Field(default=0, ge=0, description="Input tokens consumed")
     output_tokens: int = Field(default=0, ge=0, description="Output tokens generated")
     cached_tokens: int = Field(
-        default=0, ge=0, description="Cached input tokens (e.g., Anthropic prompt caching)"
+        default=0,
+        ge=0,
+        description="Cached input tokens (e.g., Anthropic prompt caching)",
     )
 
     # Backward compatibility
-    tokens_used: int = Field(default=0, ge=0, description="Total tokens (for backward compatibility)")
+    tokens_used: int = Field(
+        default=0, ge=0, description="Total tokens (for backward compatibility)"
+    )
 
     # Cost tracking
     cost: Optional[float] = Field(
@@ -157,7 +164,9 @@ class Metric(BaseModel):
     model: Optional[str] = Field(None, description="LLM model used (if applicable)")
     processing_time: float = Field(..., description="Time taken to compute (seconds)")
     tokens_used: int = Field(default=0, description="Tokens consumed (if applicable)")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
 
 
 class EvaluationResult(BaseModel):
@@ -232,7 +241,9 @@ class EvaluationResult(BaseModel):
     metrics: List[Metric] = Field(
         default_factory=list, description="Metadata about computed metrics"
     )
-    evaluator_names: List[str] = Field(default_factory=list, description="Names of evaluators used")
+    evaluator_names: List[str] = Field(
+        default_factory=list, description="Names of evaluators used"
+    )
     total_tokens: int = Field(default=0, description="Total tokens used")
     processing_time: float = Field(..., description="Total processing time in seconds")
     timestamp: datetime = Field(
@@ -432,7 +443,9 @@ class ComparisonResult(BaseModel):
     reference: Optional[str] = Field(
         None, description="Optional reference context (e.g., user question)"
     )
-    criteria: Optional[str] = Field(None, description="Optional criteria used for comparison")
+    criteria: Optional[str] = Field(
+        None, description="Optional criteria used for comparison"
+    )
 
     # Comparison results
     winner: Literal["output_a", "output_b", "tie"] = Field(
@@ -445,7 +458,9 @@ class ComparisonResult(BaseModel):
         le=1.0,
         description="Confidence in the comparison decision",
     )
-    reasoning: str = Field(..., description="Detailed explanation of why this winner was chosen")
+    reasoning: str = Field(
+        ..., description="Detailed explanation of why this winner was chosen"
+    )
     aspect_scores: Dict[str, Dict[str, float]] = Field(
         default_factory=dict,
         description="Scores for each aspect/criterion, mapping aspect name to scores for output_a and output_b",
@@ -522,3 +537,193 @@ class ComparisonResult(BaseModel):
             total += _get_interaction_cost(interaction)
 
         return total
+
+
+class BatchEvaluationResult(BaseModel):
+    """Result of batch evaluation operation.
+
+    Contains results for all items, error tracking, and aggregate statistics.
+    Provides efficient batch processing while maintaining individual result fidelity.
+
+    Example:
+        >>> batch_result = await batch_evaluate(
+        ...     items=[
+        ...         {"output": "Paris is the capital of France", "reference": "Paris is France's capital"},
+        ...         {"output": "Tokyo is the capital of Japan", "reference": "Tokyo is Japan's capital"},
+        ...         {"output": "Invalid output"},  # This might fail
+        ...     ],
+        ...     evaluators=["semantic"],
+        ...     model="gpt-4o-mini"
+        ... )
+        >>> print(f"Success rate: {batch_result.successful_items}/{batch_result.total_items}")
+        >>> print(f"Total cost: ${await batch_result.total_llm_cost():.4f}")
+        >>>
+        >>> # Access individual results
+        >>> for i, result in enumerate(batch_result.results):
+        ...     if result:  # Check if evaluation succeeded
+        ...         print(f"Item {i}: score = {result.overall_score:.2f}")
+        ...     else:
+        ...         error = next(e for e in batch_result.errors if e['index'] == i)
+        ...         print(f"Item {i}: failed - {error['error']}")
+    """
+
+    # Results (None for failed items, preserving order)
+    results: List[Optional[EvaluationResult]] = Field(
+        default_factory=list,
+        description="Evaluation results in original order. None for failed items.",
+    )
+
+    # Error tracking
+    errors: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Errors that occurred, each with 'index', 'item', and 'error' keys",
+    )
+
+    # Statistics
+    total_items: int = Field(..., description="Total number of items in batch")
+    successful_items: int = Field(..., description="Number of successful evaluations")
+    failed_items: int = Field(..., description="Number of failed evaluations")
+
+    # Timing and tokens
+    processing_time: float = Field(..., description="Total processing time in seconds")
+    total_tokens: int = Field(
+        default=0, description="Total tokens across all evaluations"
+    )
+
+    # Metadata
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow, description="When batch completed"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata and context"
+    )
+
+    def get_result(self, index: int) -> Optional[EvaluationResult]:
+        """Get result by original item index.
+
+        Args:
+            index: Zero-based index of the item in the original batch
+
+        Returns:
+            EvaluationResult if successful, None if failed or out of range
+
+        Example:
+            >>> result = batch_result.get_result(0)
+            >>> if result:
+            ...     print(f"Score: {result.overall_score}")
+        """
+        if 0 <= index < len(self.results):
+            return self.results[index]
+        return None
+
+    def get_error(self, index: int) -> Optional[Dict[str, Any]]:
+        """Get error information for a failed item.
+
+        Args:
+            index: Zero-based index of the item in the original batch
+
+        Returns:
+            Error dict if item failed, None if successful or not found
+
+        Example:
+            >>> error = batch_result.get_error(2)
+            >>> if error:
+            ...     print(f"Failed: {error['error']}")
+        """
+        for error in self.errors:
+            if error["index"] == index:
+                return error
+        return None
+
+    async def total_llm_cost(self, use_actual_pricing: bool = True) -> float:
+        """Calculate total LLM cost across all successful evaluations.
+
+        Uses llm-prices.com data for accurate cost calculation.
+
+        Args:
+            use_actual_pricing: If True, use llm-prices data; if False, use simple estimation
+
+        Returns:
+            Total cost in USD across all evaluations
+
+        Example:
+            >>> batch_result = await batch_evaluate(items=[...])
+            >>> total_cost = await batch_result.total_llm_cost()
+            >>> avg_cost_per_item = total_cost / batch_result.total_items
+            >>> print(f"Average cost per item: ${avg_cost_per_item:.4f}")
+        """
+        # Collect costs from all successful results
+        successful_results = [r for r in self.results if r is not None]
+        if not successful_results:
+            return 0.0
+
+        # Calculate cost for each result in parallel
+        import asyncio
+
+        costs = await asyncio.gather(
+            *[
+                r.total_llm_cost(use_actual_pricing=use_actual_pricing)
+                for r in successful_results
+            ]
+        )
+        return sum(costs)
+
+    async def cost_breakdown(self) -> Dict[str, Any]:
+        """Get detailed cost breakdown across all successful evaluations.
+
+        Returns:
+            Dictionary with aggregate cost breakdowns including:
+            - total: Total cost across all items
+            - per_item_average: Average cost per item
+            - by_evaluator: Aggregated cost by evaluator
+            - by_model: Aggregated cost by model
+            - success_rate: Ratio of successful to total items
+
+        Example:
+            >>> breakdown = await batch_result.cost_breakdown()
+            >>> print(f"Total: ${breakdown['total']:.4f}")
+            >>> print(f"Per item: ${breakdown['per_item_average']:.4f}")
+            >>> print(f"Success rate: {breakdown['success_rate']:.1%}")
+        """
+        successful_results = [r for r in self.results if r is not None]
+        if not successful_results:
+            return {
+                "total": 0.0,
+                "per_item_average": 0.0,
+                "by_evaluator": {},
+                "by_model": {},
+                "success_rate": 0.0,
+            }
+
+        # Get breakdowns from each result
+        import asyncio
+
+        breakdowns = await asyncio.gather(
+            *[r.cost_breakdown() for r in successful_results]
+        )
+
+        # Aggregate costs by evaluator and model
+        by_evaluator: Dict[str, float] = {}
+        by_model: Dict[str, float] = {}
+        total = 0.0
+
+        for breakdown in breakdowns:
+            total += breakdown["total"]
+            for evaluator, cost in breakdown["by_evaluator"].items():
+                by_evaluator[evaluator] = by_evaluator.get(evaluator, 0.0) + cost
+            for model, cost in breakdown["by_model"].items():
+                by_model[model] = by_model.get(model, 0.0) + cost
+
+        return {
+            "total": round(total, 6),
+            "per_item_average": (
+                round(total / self.total_items, 6) if self.total_items > 0 else 0.0
+            ),
+            "by_evaluator": {k: round(v, 6) for k, v in by_evaluator.items()},
+            "by_model": {k: round(v, 6) for k, v in by_model.items()},
+            "success_rate": (
+                self.successful_items / self.total_items
+                if self.total_items > 0
+                else 0.0
+            ),
+        }

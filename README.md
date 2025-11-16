@@ -197,26 +197,47 @@ for score in result.scores:
 
 ### Batch Evaluation
 
-Process multiple outputs efficiently using `asyncio.gather`:
+Evaluate multiple outputs in parallel with built-in progress tracking and concurrency control:
 
 ```python
-import asyncio
-from arbiter import evaluate
+from arbiter import batch_evaluate
 
-# Manual batching (batch_evaluate() API coming in Phase 4)
-outputs = ["Output 1", "Output 2", "Output 3"]
-references = ["Reference 1", "Reference 2", "Reference 3"]
+# Efficient batch processing
+items = [
+    {"output": "Paris is capital of France", "reference": "Paris is France's capital"},
+    {"output": "Tokyo is capital of Japan", "reference": "Tokyo is Japan's capital"},
+    {"output": "Berlin is capital of Germany", "reference": "Berlin is Germany's capital"},
+]
 
-results = await asyncio.gather(*[
-    evaluate(output=o, reference=r, evaluators=["semantic"], model="gpt-4o-mini")
-    for o, r in zip(outputs, references)
-])
+result = await batch_evaluate(
+    items=items,
+    evaluators=["semantic"],
+    model="gpt-4o-mini",
+    max_concurrency=5  # Control parallel execution
+)
 
-for i, result in enumerate(results, 1):
-    print(f"Result {i}: {result.overall_score:.2f}")
+print(f"Success: {result.successful_items}/{result.total_items}")
+print(f"Total cost: ${await result.total_llm_cost():.4f}")
+
+# With progress tracking
+def on_progress(completed, total, latest):
+    print(f"Progress: {completed}/{total}")
+
+result = await batch_evaluate(
+    items=items,
+    progress_callback=on_progress
+)
+
+# Access individual results
+for i, eval_result in enumerate(result.results):
+    if eval_result:
+        print(f"Item {i}: {eval_result.overall_score:.2f}")
+    else:
+        error = result.get_error(i)
+        print(f"Item {i}: FAILED - {error['error']}")
 ```
 
-See [examples/batch_manual.py](examples/batch_manual.py) for complete batch evaluation patterns.
+See [examples/batch_evaluation_example.py](examples/batch_evaluation_example.py) for comprehensive patterns including error handling and cost breakdown.
 
 **Note:** Result persistence (storage backends) is deferred to Phase 2.0. For now, you can persist results manually:
 ```python

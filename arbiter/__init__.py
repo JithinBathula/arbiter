@@ -58,13 +58,14 @@ https://docs.arbiter.ai/
 from dotenv import load_dotenv
 
 # Core API
-from .api import compare, evaluate
+from .api import batch_evaluate, compare, evaluate
 
 # Core components
 from .core import (
     AVAILABLE_EVALUATORS,
     ArbiterError,
     BaseEvaluator,
+    BatchEvaluationResult,
     CachingMiddleware,
     ComparisonResult,
     ConfigurationError,
@@ -127,6 +128,7 @@ __all__ = [
     # Main API
     "evaluate",
     "compare",
+    "batch_evaluate",
     # Evaluators
     "SemanticEvaluator",
     "CustomCriteriaEvaluator",
@@ -138,6 +140,7 @@ __all__ = [
     # Core Models
     "EvaluationResult",
     "ComparisonResult",
+    "BatchEvaluationResult",
     "Score",
     "Metric",
     "LLMInteraction",
