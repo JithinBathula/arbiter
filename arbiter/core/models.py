@@ -7,7 +7,7 @@ This module defines the primary data structures used throughout Arbiter:
 - LLMInteraction: Track individual LLM API calls for transparency
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -592,7 +592,8 @@ class BatchEvaluationResult(BaseModel):
 
     # Metadata
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="When batch completed"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="When batch completed",
     )
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata and context"

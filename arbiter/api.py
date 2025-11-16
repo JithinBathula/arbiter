@@ -30,6 +30,7 @@ This module provides the primary entry points for evaluating LLM outputs.
     ... )
 """
 
+import asyncio
 import logging
 import time
 from typing import Any, Callable, Dict, List, Optional
@@ -573,9 +574,6 @@ async def _batch_evaluate_impl(
     middleware: Optional[MiddlewarePipeline] = None,
 ) -> "BatchEvaluationResult":
     """Internal implementation of batch evaluation."""
-    import asyncio
-
-    from .core.models import BatchEvaluationResult
 
     start_time = time.time()
     total_items = len(items)
@@ -591,6 +589,12 @@ async def _batch_evaluate_impl(
 
     # Track completion for progress callback
     completed_count = [0]  # Use list for closure mutability
+
+    def update_progress(result: Optional[EvaluationResult]) -> None:
+        """Helper to update progress counter and invoke callback."""
+        completed_count[0] += 1
+        if progress_callback:
+            progress_callback(completed_count[0], total_items, result)
 
     async def evaluate_item(
         index: int, item: Dict[str, Any]
@@ -616,11 +620,7 @@ async def _batch_evaluate_impl(
                     middleware=middleware,
                 )
 
-                # Update progress
-                completed_count[0] += 1
-                if progress_callback:
-                    progress_callback(completed_count[0], total_items, result)
-
+                update_progress(result)
                 return (index, result, None)
 
             except Exception as e:
@@ -631,11 +631,7 @@ async def _batch_evaluate_impl(
                     extra={"batch_index": index, "error_type": type(e).__name__},
                 )
 
-                # Update progress
-                completed_count[0] += 1
-                if progress_callback:
-                    progress_callback(completed_count[0], total_items, None)
-
+                update_progress(None)
                 return (index, None, error_msg)
 
     # Create tasks for all items
