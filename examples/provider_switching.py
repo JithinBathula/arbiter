@@ -66,7 +66,7 @@ async def main():
         print(f"Provider: OpenAI")
         print(f"Model: {result1.interactions[0].model if result1.interactions else 'N/A'}")
         print(f"Score: {result1.overall_score:.3f}")
-        print(f"Tokens Used: {result1.total_tokens}")
+        print(f"Tokens: {result1.total_tokens:,}")
         print(f"Processing Time: {result1.processing_time:.3f}s")
 
     # Example 2: Using Anthropic (if available)
@@ -86,7 +86,7 @@ async def main():
             print(f"Provider: Anthropic")
             print(f"Model: {result2.interactions[0].model if result2.interactions else 'N/A'}")
             print(f"Score: {result2.overall_score:.3f}")
-            print(f"Tokens Used: {result2.total_tokens}")
+            print(f"Tokens: {result2.total_tokens:,}")
             print(f"Processing Time: {result2.processing_time:.3f}s")
         except Exception as e:
             print(f"⚠️  Anthropic evaluation failed: {e}")
@@ -109,7 +109,7 @@ async def main():
             print(f"Provider: Google")
             print(f"Model: {result3.interactions[0].model if result3.interactions else 'N/A'}")
             print(f"Score: {result3.overall_score:.3f}")
-            print(f"Tokens Used: {result3.total_tokens}")
+            print(f"Tokens: {result3.total_tokens:,}")
             print(f"Processing Time: {result3.processing_time:.3f}s")
         except Exception as e:
             print(f"⚠️  Google evaluation failed: {e}")
@@ -207,6 +207,11 @@ This allows you to:
     print("  • Groq (Llama 3.1, Mixtral)")
     print("  • Mistral AI")
     print("  • Cohere")
+
+    print("\n📖 Related Examples:")
+    print("  • See advanced_config.py for model configuration options")
+    print("  • See basic_evaluation.py for getting started with evaluations")
+    print("  • See observability_example.py for tracking costs across providers")
 
 
 if __name__ == "__main__":

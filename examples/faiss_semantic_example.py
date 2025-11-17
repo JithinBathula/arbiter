@@ -206,6 +206,11 @@ async def main():
     print("  • Nuanced semantic analysis")
     print("  • Production where understanding matters")
 
+    print("\n📖 Related Examples:")
+    print("  • See basic_evaluation.py for standard LLM-based semantic evaluation")
+    print("  • See batch_evaluation_example.py for batch processing patterns")
+    print("  • See observability_example.py for cost tracking and monitoring")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

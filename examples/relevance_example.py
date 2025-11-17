@@ -279,7 +279,7 @@ async def example_8_observability():
 
     print(f"\nRelevance Score: {result.overall_score:.2f}")
     print(f"\nObservability Metrics:")
-    print(f"  Total Tokens Used: {result.total_tokens}")
+    print(f"  Total Tokens: {result.total_tokens:,}")
     print(f"  Processing Time: {result.processing_time:.2f}s")
     print(f"  LLM Interactions: {len(result.interactions)}")
 
@@ -312,6 +312,11 @@ async def main():
     print("\n" + "=" * 60)
     print("All relevance examples completed!")
     print("=" * 60)
+
+    print("\n📖 Related Examples:")
+    print("  • See factuality_example.py for fact-checking and hallucination detection")
+    print("  • See groundedness_example.py for RAG output validation")
+    print("  • See semantic_example.py for meaning-based similarity")
 
 
 if __name__ == "__main__":

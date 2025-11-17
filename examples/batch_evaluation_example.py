@@ -79,7 +79,7 @@ async def main():
     print(f"  Successful: {result.successful_items}")
     print(f"  Failed: {result.failed_items}")
     print(f"  Processing Time: {result.processing_time:.2f}s")
-    print(f"  Total Tokens: {result.total_tokens}")
+    print(f"  Total Tokens: {result.total_tokens:,}")
 
     # Show individual scores
     print("\n📈 Individual Scores:")
@@ -242,6 +242,11 @@ async def main():
     print("  • Multiple evaluators per item")
     print("  • Comprehensive cost tracking and breakdown")
     print("  • Individual result and error access")
+
+    print("\n📖 Related Examples:")
+    print("  • See basic_evaluation.py for single evaluation getting started")
+    print("  • See pairwise_comparison_example.py for comparing outputs")
+    print("  • See error_handling_example.py for handling failures")
 
 
 if __name__ == "__main__":

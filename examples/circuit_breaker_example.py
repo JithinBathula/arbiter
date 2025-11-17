@@ -55,6 +55,12 @@ async def main():
         )
         print(f"✅ Evaluation completed: {result.overall_score:.3f}")
         print("   Circuit breaker is active and monitoring failures.")
+
+        # Cost tracking
+        breakdown = await result.cost_breakdown()
+        print(f"\n💰 Cost Analysis:")
+        print(f"  Total Cost: ${breakdown['total']:.6f}")
+        print(f"  Tokens: {breakdown['token_breakdown']['total_tokens']:,}")
     except Exception as e:
         print(f"❌ Error: {e}")
 
@@ -248,6 +254,11 @@ async def main():
     print("  - Customize via LLMClient constructor")
     print("  - Share circuit breaker across client pool")
     print("\n✅ Production Ready!")
+
+    print("\n📖 Related Examples:")
+    print("  • See middleware_usage.py for production middleware patterns")
+    print("  • See error_handling_example.py for error recovery strategies")
+    print("  • See observability_example.py for monitoring and metrics")
 
 
 if __name__ == "__main__":

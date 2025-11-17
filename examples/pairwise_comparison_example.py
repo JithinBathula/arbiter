@@ -180,6 +180,11 @@ For more details, see the documentation.""",
     print("  • Selecting best output from candidates")
     print("  • Evaluating relative quality differences")
 
+    print("\n📖 Related Examples:")
+    print("  • See batch_evaluation_example.py for comparing multiple outputs")
+    print("  • See multiple_evaluators.py for multi-evaluator comparison")
+    print("  • See semantic_example.py for similarity-based evaluation")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

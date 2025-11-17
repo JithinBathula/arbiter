@@ -214,7 +214,7 @@ async def example_6_cost_tracking():
 
     print(f"\nFactuality Score: {result.overall_score:.2f}")
     print(f"\nLLM Interaction Details:")
-    print(f"  Total Tokens Used: {result.total_tokens}")
+    print(f"  Total Tokens: {result.total_tokens:,}")
     print(f"  Processing Time: {result.processing_time:.2f}s")
     print(f"  LLM Calls Made: {len(result.interactions)}")
 
@@ -245,6 +245,11 @@ async def main():
     print("\n" + "=" * 60)
     print("✅ All examples completed!")
     print("=" * 60)
+
+    print("\n📖 Related Examples:")
+    print("  • See groundedness_example.py for RAG output validation")
+    print("  • See relevance_example.py for query-output alignment")
+    print("  • See semantic_example.py for meaning-based comparison")
 
 
 if __name__ == "__main__":

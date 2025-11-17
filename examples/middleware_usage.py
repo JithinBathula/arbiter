@@ -70,6 +70,12 @@ async def main():
     print(f"Score: {result1.overall_score:.3f}")
     print("\n💡 Check the logs above for middleware output!")
 
+    # Cost tracking
+    breakdown1 = await result1.cost_breakdown()
+    print(f"\n💰 Cost Analysis:")
+    print(f"  Total Cost: ${breakdown1['total']:.6f}")
+    print(f"  Tokens: {breakdown1['token_breakdown']['total_tokens']:,}")
+
     # Example 2: Metrics middleware
     print("\n\n📝 Example 2: Metrics Middleware")
     print("-" * 60)
@@ -219,20 +225,41 @@ async def main():
 
     print(f"Score: {result4.overall_score:.3f}")
 
+    # Session cost summary
+    cost2 = await result2a.total_llm_cost()
+    cost3 = await result2b.total_llm_cost()
+    cost4 = await result3.total_llm_cost()
+    cost5 = await result4.total_llm_cost()
+    total_cost = breakdown1['total'] + cost2 + cost3 + cost4 + cost5
+    total_tokens = result1.total_tokens + result2a.total_tokens + result2b.total_tokens + result3.total_tokens + result4.total_tokens
+
     # Summary
     print("\n\n" + "=" * 60)
     print("✅ Examples Complete!")
-    print("\nKey Features Demonstrated:")
+
+    print(f"\n💰 Total Session Cost:")
+    print(f"  Total Evaluations: 5")
+    print(f"  Total Cost: ${total_cost:.6f}")
+    print(f"  Total Tokens: {total_tokens:,}")
+    print(f"  Average per Evaluation: ${total_cost/5:.6f}")
+
+    print("\n📚 Key Features Demonstrated:")
     print("  • LoggingMiddleware - Log all evaluation operations")
     print("  • MetricsMiddleware - Collect performance metrics")
     print("  • CachingMiddleware - Cache results for faster repeated evaluations")
     print("  • Combined pipelines - Use multiple middleware together")
     print("  • Custom middleware - Build your own middleware components")
-    print("\nProduction Benefits:")
+
+    print("\n🎯 Production Benefits:")
     print("  • Complete observability with logging")
     print("  • Performance monitoring with metrics")
     print("  • Cost reduction with caching")
     print("  • Flexible extension with custom middleware")
+
+    print("\n📖 Related Examples:")
+    print("  • See observability_example.py for comprehensive LLM interaction tracking")
+    print("  • See circuit_breaker_example.py for resilience patterns")
+    print("  • See error_handling_example.py for error recovery strategies")
 
 
 if __name__ == "__main__":

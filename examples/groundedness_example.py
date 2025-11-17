@@ -247,7 +247,7 @@ async def example_6_observability():
 
     print(f"\nGroundedness Score: {result.overall_score:.2f}")
     print(f"\nObservability Metrics:")
-    print(f"  Total Tokens Used: {result.total_tokens}")
+    print(f"  Total Tokens: {result.total_tokens:,}")
     print(f"  Processing Time: {result.processing_time:.2f}s")
     print(f"  LLM Interactions: {len(result.interactions)}")
 
@@ -278,6 +278,11 @@ async def main():
     print("\n" + "=" * 60)
     print("All groundedness examples completed!")
     print("=" * 60)
+
+    print("\n📖 Related Examples:")
+    print("  • See factuality_example.py for hallucination detection")
+    print("  • See rag_evaluation.py for comprehensive RAG evaluation")
+    print("  • See relevance_example.py for query-output alignment")
 
 
 if __name__ == "__main__":

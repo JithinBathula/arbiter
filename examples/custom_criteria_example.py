@@ -69,6 +69,12 @@ their healthcare providers to develop a personalized treatment plan.""",
         if score.explanation:
             print(f"    Explanation: {score.explanation[:150]}...")
 
+    # Cost tracking
+    breakdown1 = await result1.cost_breakdown()
+    print(f"\n💰 Cost Analysis:")
+    print(f"  Total Cost: ${breakdown1['total']:.6f}")
+    print(f"  Tokens: {breakdown1['token_breakdown']['total_tokens']:,}")
+
     # Example 2: Technical accuracy evaluation
     print("\n\n📝 Example 2: Technical Accuracy Evaluation")
     print("-" * 60)
@@ -154,20 +160,39 @@ It's like, the best thing ever and everyone loves it. Get yours now!!!""",
     # Access interactions directly
     print("\n🔬 Evaluator Interactions:")
     interactions = evaluator.get_interactions()
+    total_tokens_eval = sum(i.tokens_used for i in interactions)
     print(f"  Total Calls: {len(interactions)}")
-    print(f"  Total Tokens: {sum(i.tokens_used for i in interactions)}")
+    print(f"  Total Tokens: {total_tokens_eval:,}")
     print(f"  Total Latency: {sum(i.latency for i in interactions):.2f}s")
 
-    # Summary
+    # Session summary
     print("\n\n" + "=" * 60)
     print("✅ Examples Complete!")
-    print("\nKey Features Demonstrated:")
+
+    # Calculate total session cost
+    cost2 = await result2.total_llm_cost()
+    cost3 = await result3.total_llm_cost()
+    total_cost = breakdown1['total'] + cost2 + cost3
+    total_tokens_all = result1.total_tokens + result2.total_tokens + result3.total_tokens
+
+    print(f"\n💰 Total Session Cost:")
+    print(f"  Total Evaluations: 4")
+    print(f"  Total Cost: ${total_cost:.6f}")
+    print(f"  Total Tokens: {total_tokens_all:,}")
+    print(f"  Average per Evaluation: ${total_cost / 4:.6f}")
+
+    print("\n📚 Key Features Demonstrated:")
     print("  • Domain-specific criteria evaluation (medical, technical, brand voice)")
     print("  • Reference-free evaluation (no ground truth needed)")
     print("  • Reference-based evaluation (comparing against expectations)")
     print("  • Detailed criteria breakdown (met/not met)")
     print("  • Both high-level API and direct evaluator usage")
-    print("  • Automatic interaction tracking and cost calculation")
+    print("  • Automatic cost tracking and token analysis")
+
+    print("\n📖 Related Examples:")
+    print("  • See multiple_evaluators.py for combining criteria with other evaluators")
+    print("  • See rag_evaluation.py for evaluating RAG systems with custom criteria")
+    print("  • See factuality_example.py for fact-checking with criteria")
 
 
 if __name__ == "__main__":

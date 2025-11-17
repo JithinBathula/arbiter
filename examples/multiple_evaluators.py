@@ -76,6 +76,12 @@ async def main():
         for evaluator, error_msg in result1.errors.items():
             print(f"    - {evaluator}: {error_msg}")
 
+    # Cost tracking
+    breakdown1 = await result1.cost_breakdown()
+    print(f"\n💰 Cost Analysis:")
+    print(f"  Total Cost: ${breakdown1['total']:.6f}")
+    print(f"  Tokens: {breakdown1['token_breakdown']['total_tokens']:,}")
+
     # Example 2: Understanding combined scores
     print("\n\n📝 Example 2: Understanding Combined Scores")
     print("-" * 60)
@@ -203,17 +209,31 @@ Order now and get 50% off!""",
     # Summary
     print("\n\n" + "=" * 60)
     print("✅ Examples Complete!")
-    print("\nKey Features Demonstrated:")
+
+    # Session cost summary
+    cost2 = await result2.total_llm_cost()
+    cost3 = await result3.total_llm_cost()
+    total_cost = breakdown1['total'] + cost2 + cost3
+    total_tokens = result1.total_tokens + result2.total_tokens + result3.total_tokens
+
+    print(f"\n💰 Total Session Cost:")
+    print(f"  Total Evaluations: 5")
+    print(f"  Total Cost: ${total_cost:.6f}")
+    print(f"  Total Tokens: {total_tokens:,}")
+    print(f"  Average per Evaluation: ${total_cost / 5:.6f}")
+
+    print("\n📚 Key Features Demonstrated:")
     print("  • Combining multiple evaluators for comprehensive assessment")
     print("  • Understanding how overall_score is calculated")
     print("  • Using individual scores for detailed analysis")
     print("  • Handling partial results when some evaluators fail")
     print("  • Real-world decision-making based on multiple scores")
-    print("\nBenefits of Multiple Evaluators:")
-    print("  • More comprehensive evaluation from different perspectives")
-    print("  • Better decision-making with multiple data points")
-    print("  • Graceful degradation if one evaluator fails")
-    print("  • Detailed insights into different quality aspects")
+    print("  • Automatic cost tracking across all evaluators")
+
+    print("\n📖 Related Examples:")
+    print("  • See custom_criteria_example.py for detailed criteria evaluation")
+    print("  • See error_handling_example.py for robust error management")
+    print("  • See rag_evaluation.py for multi-evaluator RAG assessment")
 
 
 if __name__ == "__main__":

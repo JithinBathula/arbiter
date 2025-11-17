@@ -119,6 +119,12 @@ async def main():
     print(f"Passed: {result.passed}")
     print(f"Explanation: {result.scores[0].explanation}")
 
+    # Cost tracking
+    breakdown1 = await result.cost_breakdown()
+    print(f"\n💰 Cost Analysis:")
+    print(f"  Total Cost: ${breakdown1['total']:.6f}")
+    print(f"  Tokens: {breakdown1['token_breakdown']['total_tokens']:,}")
+
     # Example 5: Use multiple evaluators (built-in + custom)
     print("\n=== Using Multiple Evaluators ===")
     result = await evaluate(
@@ -131,6 +137,32 @@ async def main():
     print(f"Overall Score: {result.overall_score:.2f}")
     for score in result.scores:
         print(f"  {score.name}: {score.value:.2f}")
+
+    # Session cost summary
+    cost2 = await result.total_llm_cost()
+    total_cost = breakdown1['total'] + cost2
+    total_tokens = result.total_tokens
+
+    print("\n\n" + "=" * 60)
+    print("✅ Examples Complete!")
+
+    print(f"\n💰 Total Session Cost:")
+    print(f"  Total Evaluations: 2")
+    print(f"  Total Cost: ${total_cost:.6f}")
+    print(f"  Total Tokens: {total_tokens:,}")
+    print(f"  Average per Evaluation: ${total_cost/2:.6f}")
+
+    print("\n📚 Key Features Demonstrated:")
+    print("  • Discover available built-in evaluators")
+    print("  • Create custom evaluator classes")
+    print("  • Register custom evaluators by name")
+    print("  • Use custom evaluators alongside built-in ones")
+    print("  • Extend the framework with domain-specific evaluators")
+
+    print("\n📖 Related Examples:")
+    print("  • See custom_criteria_example.py for flexible evaluation criteria")
+    print("  • See multiple_evaluators.py for combining evaluators")
+    print("  • See middleware_usage.py for production middleware patterns")
 
 
 if __name__ == "__main__":

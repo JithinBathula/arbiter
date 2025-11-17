@@ -229,7 +229,7 @@ async def main():
             evaluators=["semantic"],
             llm_client=reusable_client,  # Reuse same client
         )
-        print(f"  {i}. Score: {result.overall_score:.3f} ({result.total_tokens} tokens)")
+        print(f"  {i}. Score: {result.overall_score:.3f} ({result.total_tokens:,} tokens)")
 
     print("\n💡 Tip: Reusing clients avoids connection overhead")
     print("         Better for batch operations")
