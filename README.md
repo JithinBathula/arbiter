@@ -1,12 +1,13 @@
 <div align="center">
   <h1>Arbiter</h1>
 
-  <p><strong>LLM Evaluations with automatic interaction tracking, multiple evaluators, and extensible architecture</strong></p>
+  <p><strong>Native PydanticAI evaluation with automatic cost tracking</strong></p>
 
   <p>
     <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
     <a href="https://github.com/evanvolgas/arbiter"><img src="https://img.shields.io/badge/version-0.1.0--alpha-blue" alt="Version"></a>
+    <a href="https://ai.pydantic.dev"><img src="https://img.shields.io/badge/PydanticAI-native-purple" alt="PydanticAI"></a>
   </p>
 
   <p><em>⚠️ Alpha Software: Early development stage. Use for evaluation and experimentation.</em></p>
@@ -16,30 +17,45 @@
 
 ## Why Arbiter?
 
-**The Problem:** Teams building with LLMs need to evaluate output quality at scale. Manual review becomes impractical beyond a few examples, and writing custom evaluation code for every use case is time-consuming.
+Stop guessing what your LLM evaluations cost. Arbiter shows you exactly what happened in every evaluation - with **automatic cost tracking**, complete interaction visibility, and native PydanticAI integration.
 
-**What Arbiter Provides:**
-- **Simple API**: Evaluate LLM outputs with 3 lines of code
-- **Automatic Tracking**: Complete visibility into LLM interactions, costs, and performance
-- **Provider-Agnostic**: Works with OpenAI, Anthropic, Google, Groq, Mistral, and Cohere
-- **Production-Ready**: Built-in retry logic, connection pooling, and middleware support
+```python
+from arbiter import evaluate
 
-**Use Case Example:**
-A customer support chatbot needs quality evaluation. Arbiter provides:
-1. Automated evaluation against defined criteria
-2. Detailed scoring with explanations
-3. Complete audit trail of all LLM interactions
-4. Cost and performance metrics per evaluation
+result = await evaluate(
+    output="Paris is the capital of France",
+    reference="The capital of France is Paris",
+    evaluators=["semantic"],
+    model="gpt-4o-mini"
+)
 
----
+print(f"Score: {result.overall_score:.2f}")
+print(f"Cost: ${await result.total_llm_cost():.6f}")  # Real pricing data
+print(f"Calls: {len(result.interactions)}")           # Every LLM interaction
+```
 
-## What is Arbiter?
+### What Makes Arbiter Different?
 
-Arbiter is an LLM evaluation framework that provides simple APIs, automatic observability, and provider-agnostic infrastructure.
+**1. Automatic Cost Transparency** (Unique)
+- Real-time cost calculation using live pricing data
+- Cost breakdown by evaluator and model
+- No guessing - see exactly what each evaluation costs
 
-Evaluate LLM outputs with 3 lines of code while maintaining visibility into cost, quality, and decision-making processes.
+**2. PydanticAI Native**
+- Built on PydanticAI - same patterns you already know
+- Type-safe structured outputs
+- If you use PydanticAI, Arbiter feels familiar
 
-**Core Value**: A pragmatic approach to LLM evaluation without complexity, vendor lock-in, or hidden costs.
+**3. Pure Library Philosophy**
+- No platform signup required
+- No server to run
+- Just `pip install` and go
+- No vendor lock-in to SaaS platforms
+
+**4. Complete Observability**
+- Every LLM interaction automatically tracked
+- Prompts, responses, tokens, latency - all visible
+- Perfect for debugging evaluation issues
 
 **Status**: Alpha software (v0.1.0-alpha). Functional but early-stage. Best suited for evaluation, experimentation, and development. Not recommended for mission-critical use yet.
 
@@ -85,7 +101,6 @@ The `.env.example` file includes placeholders for all supported providers:
 ```python
 from arbiter import evaluate
 
-# Simple evaluation with automatic client management
 result = await evaluate(
     output="Paris is the capital of France",
     reference="The capital of France is Paris",
@@ -93,29 +108,45 @@ result = await evaluate(
     model="gpt-4o-mini"
 )
 
-print(f"Score: {result.overall_score:.2f}")
-print(f"Passed: {result.passed}")
-print(f"Interactions: {len(result.interactions)}")
+# See everything that happened
+print(f"✓ Score: {result.overall_score:.2f}")
+print(f"💰 Cost: ${await result.total_llm_cost():.6f}")
+print(f"⏱️  Time: {result.processing_time:.2f}s")
+print(f"🔍 LLM Calls: {len(result.interactions)}")
+
+# Get detailed cost breakdown
+breakdown = await result.cost_breakdown()
+print(f"\nBy evaluator: {breakdown['by_evaluator']}")
+print(f"By model: {breakdown['by_model']}")
 ```
 
-Or use evaluators directly for more control:
+### Cost Comparison Example
+
+Compare evaluation costs across different models:
 
 ```python
-from arbiter import SemanticEvaluator, LLMManager
-
-# Get LLM client
-client = await LLMManager.get_client(model="gpt-4o-mini")
-
-# Create and use evaluator
-evaluator = SemanticEvaluator(client)
-score = await evaluator.evaluate(
-    output="Paris is the capital of France",
-    reference="The capital of France is Paris"
+# Test with expensive model
+result_gpt4 = await evaluate(
+    output=output, reference=reference,
+    model="gpt-4o", evaluators=["semantic"]
 )
 
-print(f"Semantic similarity: {score.value:.2f}")
-print(f"Confidence: {score.confidence:.2f}")
+# Test with cheaper model
+result_mini = await evaluate(
+    output=output, reference=reference,
+    model="gpt-4o-mini", evaluators=["semantic"]
+)
+
+cost_gpt4 = await result_gpt4.total_llm_cost()
+cost_mini = await result_mini.total_llm_cost()
+
+print(f"GPT-4o: ${cost_gpt4:.6f}")
+print(f"GPT-4o-mini: ${cost_mini:.6f}")
+print(f"Savings: {((cost_gpt4 - cost_mini) / cost_gpt4 * 100):.1f}%")
+print(f"Score difference: {abs(result_gpt4.overall_score - result_mini.overall_score):.3f}")
 ```
+
+**Result**: GPT-4o-mini often gives similar quality at 80%+ cost savings.
 
 ## Key Features
 
