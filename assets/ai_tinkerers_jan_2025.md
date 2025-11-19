@@ -397,7 +397,7 @@ Use Arbiter if: You want a simple library that shows costs and tracks interactio
 
 ---
 
-## 💬 GitHub Issues Needed!
+## GitHub Issues Needed!
 
 **What would make Arbiter more useful for you?**
 
@@ -417,7 +417,7 @@ Use Arbiter if: You want a simple library that shows costs and tracks interactio
 **Your Pain Points:**
 - What evaluation problem keeps you up at night?
 
-**👉 https://github.com/evanvolgas/arbiter/issues**
+https://github.com/evanvolgas/arbiter/issues
 
 ---
 
@@ -430,10 +430,10 @@ Use Arbiter if: You want a simple library that shows costs and tracks interactio
 4. **Automatic Tracking** - Every LLM call tracked automatically
 
 **How You Can Help:**
-- 🔍 **REVIEW THIS PR**: https://github.com/evanvolgas/arbiter/pull/7
-- 💬 **Open issues** with evaluator ideas (see section above ☝️)
-- 🤝 **Contribute** domain-specific evaluators
-- ⭐ **Star the repo**: github.com/evanvolgas/arbiter
+- REVIEW THIS PR: https://github.com/evanvolgas/arbiter/pull/7
+- Open issues with evaluator ideas (see section above)
+- Contribute domain-specific evaluators
+- Star the repo: github.com/evanvolgas/arbiter
 
 v0.1.0-alpha - looking for early adopters and feedback!
 
@@ -508,35 +508,3 @@ A: "Maybe - 95% test coverage, strict mypy typing, production-grade error handli
 
 
 
-## Pre-Presentation Setup
-
-### Environment Check (Do This Thursday Morning)
-```bash
-# 1. Verify all examples run
-cd ~/Documents/gh/arbiter
-python examples/basic_evaluation.py
-python examples/observability_example.py
-python examples/provider_switching.py
-python examples/custom_criteria_example.py
-
-# 2. Verify tests pass
-pytest tests/ -v
-
-# 3. Verify type checking passes
-mypy arbiter/
-
-# 4. Check API keys are set
-echo $OPENAI_API_KEY  # Should show key
-echo $ANTHROPIC_API_KEY  # Optional but nice to have
-
-# 5. Open files in editor
-code examples/basic_evaluation.py
-code examples/observability_example.py
-code examples/custom_criteria_example.py
-code arbiter/evaluators/base.py
-
-# 6. Terminal windows ready
-# Terminal 1: For running examples
-# Terminal 2: For showing code
-# Terminal 3: For pytest/mypy demos
-```
