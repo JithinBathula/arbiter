@@ -315,11 +315,12 @@ Built on proven patterns with type-safe foundations:
 
 ## Examples
 
-17 comprehensive examples demonstrating all features:
+18 comprehensive examples demonstrating all features:
 
 **Getting Started:**
+- [Debugging Multi-Call Systems](examples/debugging_multi_call.py) - ⭐ The black box problem solved
 - [Basic Evaluation](examples/basic_evaluation.py) - Simple semantic evaluation with cost tracking
-- [Cost Comparison](examples/cost_comparison.py) - NEW: Model cost/quality analysis
+- [Cost Comparison](examples/cost_comparison.py) - Model cost/quality analysis
 - [Multiple Evaluators](examples/multiple_evaluators.py) - Combining evaluators
 
 **Evaluators:**
