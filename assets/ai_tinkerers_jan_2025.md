@@ -485,6 +485,12 @@ https://github.com/evanvolgas/arbiter/issues
 - Looking for early adopters and feedback
 - What evaluation problems do YOU have?
 
+**How you can help:**
+- ⭐ Star the repo: github.com/evanvolgas/arbiter
+- 🔍 REVIEW THIS PR: [Link to your current PR]
+- 💬 Open issues with feature requests or bugs
+- 🤝 Contribute evaluators for your domain
+
 **github.com/evanvolgas/arbiter**
 
 
