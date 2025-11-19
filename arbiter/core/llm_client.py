@@ -14,12 +14,16 @@ internally. It integrates with PydanticAI for structured outputs.
 
 ## Supported Providers:
 
-- **OpenAI**: GPT-4o, GPT-4o-mini, GPT-4 Turbo, GPT-3.5 Turbo
-- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus/Sonnet/Haiku
-- **Google**: Gemini 2.0 Flash, Gemini 1.5 Pro/Flash
+All providers and models supported by PydanticAI work with Arbiter:
+
+- **OpenAI**: Any GPT model (GPT-4o, GPT-4o-mini, o1, o3-mini, etc.)
+- **Anthropic**: Any Claude model (Claude Sonnet 4.5, Claude 3.5/3 Opus/Sonnet/Haiku)
+- **Google**: Any Gemini model (Gemini 2.0 Flash, Gemini 1.5 Pro/Flash)
 - **Groq**: Fast inference (Llama, Mixtral, Gemma models)
 - **Mistral**: Mistral Large/Medium/Small, Mixtral models
 - **Cohere**: Command R/R+, Embed models
+
+Model names are passed directly to the provider - use any model the provider offers.
 
 ## Usage:
 

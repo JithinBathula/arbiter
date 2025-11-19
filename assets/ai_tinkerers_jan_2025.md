@@ -130,12 +130,14 @@ result3 = await evaluate(
 ```
 
 **Supported Providers:**
-- OpenAI (GPT-4o, GPT-4, GPT-3.5-turbo)
-- Anthropic (Claude 3.5 Sonnet, Claude 3 Opus)
-- Google (Gemini 1.5 Pro/Flash)
-- Groq (Llama 3.1, Mixtral)
-- Mistral AI
-- Cohere
+
+Any model from these providers (via PydanticAI):
+- OpenAI (GPT-4o, o1, o3-mini, etc.)
+- Anthropic (Claude Sonnet 4.5, Claude 3.5/3 family)
+- Google (Gemini 2.0 Flash, 1.5 Pro/Flash)
+- Groq (Llama, Mixtral, Gemma)
+- Mistral AI (all models)
+- Cohere (all models)
 
 ---
 

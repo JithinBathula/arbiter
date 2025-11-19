@@ -9,7 +9,7 @@
 
 **Arbiter**: Production-grade LLM evaluation framework (v0.1.0-alpha)
 **Stack**: Python 3.11+, PydanticAI, provider-agnostic
-**Supported Providers**: OpenAI (GPT-4o, GPT-4o-mini), Anthropic (Claude 3.5), Google (Gemini 2.0), Groq, Mistral, Cohere
+**Supported Providers**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere (any model via PydanticAI)
 **Coverage**: 95% test coverage, strict mypy, comprehensive examples
 
 ### Directory Structure
