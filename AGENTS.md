@@ -200,98 +200,21 @@ make all           # Format + lint + type-check + test
 
 ---
 
-## Working with AI Agents: Lessons Learned
+## Working with AI Agents
 
-### Audience Context Recognition
-**Pattern**: When creating materials for specific audiences (engineers, researchers, business users), immediately adapt tone and content.
+**Recognize audience immediately**: Engineers get technical tone, no marketing. Business gets value/ROI focus.
 
-**Examples**:
-- **Engineering audiences** (AI Tinkerers, tech meetups) → Technical tone, no marketing language
-- **Business audiences** (executive presentations) → Focus on value, ROI, business impact
-- **Academic audiences** (research papers) → Methodology, rigor, citations
+**Separate materials**: Code examples stay clean (no narratives). Presentation materials (openers, talking points) live in separate files.
 
-**Common mistakes**:
-- Using marketing language for technical audiences
-- Mixing presentation materials (narratives, talking points) with code examples
-- Defaulting to generic tone instead of contextualizing
+**Test output quality**: Run code AND verify output is actually useful, not just functional.
 
-**Fix**: Before creating content, ask: "Who is this for?" and adjust accordingly.
+**Iterate fast**: Ship → test → get feedback → fix → commit. Don't perfect upfront.
 
-### Code vs. Presentation Materials
-**Pattern**: Keep code examples and presentation materials strictly separated.
+**Direct feedback works**: "This reads like marketing" > "This could be improved"
 
-**Code examples** (`examples/`):
-- Clean technical demonstrations
-- Self-contained, runnable
-- Show real data structures
-- No narratives or talking points
-- Full output, not truncated summaries
+**Track tasks**: Use TodoWrite for 3+ steps to ensure nothing gets forgotten.
 
-**Presentation materials** (`assets/`, docs):
-- Openers, narratives, talking points
-- Speaker notes and demo flows
-- Audience-appropriate language
-- References to code, not embedded in it
-
-**Common mistake**: Adding presentation narratives to code files (openers in example docstrings, marketing language in comments).
-
-### Testing Output Quality
-**Pattern**: Test not just functionality, but output quality and usefulness.
-
-When creating examples:
-1. Run the code to verify it works (functionality)
-2. Review the actual output to verify it's useful (quality)
-3. Check that output serves the example's purpose (effectiveness)
-
-**Example**: Debugging example showing "first 200 chars" of prompts is functionally correct but useless for understanding what happened. Show full prompts/responses instead.
-
-### Iterative Refinement Over Perfection
-**Pattern**: Ship working version, get feedback, refine based on actual output.
-
-**Effective workflow**:
-1. Create initial implementation
-2. Test it (run the code, verify output)
-3. Get feedback on real results
-4. Fix specific issues identified
-5. Commit, repeat
-
-**Ineffective**: Try to anticipate all requirements upfront and build perfect solution before testing.
-
-### Direct Feedback Enables Fast Iteration
-**Pattern**: Clear, immediate feedback on what's wrong enables rapid course correction.
-
-**Effective feedback characteristics**:
-- **Direct**: "This reads like marketing" (clear what's wrong)
-- **Specific**: "Move this section after that one" (concrete action)
-- **Immediate**: Don't accumulate issues, address as they appear
-- **Contextual**: Reference prior conversation ("the first one, the one I liked")
-
-**Why this works**: No ambiguity about what needs to change, minimal back-and-forth, fast feedback loops.
-
-### Use TodoWrite for Multi-Step Tasks
-**Pattern**: For tasks with 3+ steps, use TodoWrite to track progress.
-
-**When to use**:
-- Multiple discrete tasks in sequence
-- Complex workflows requiring phase tracking
-- Ensures nothing gets forgotten
-- Provides progress visibility
-
-**Example**: "Test example → Update opener → Update presentation docs" breaks into clear trackable tasks.
-
-### Commit Hygiene for Collaboration
-**Pattern**: Every meaningful change gets its own commit with clear message.
-
-**Benefits**:
-- Easy to track what changed when
-- Allows selective rollback if needed
-- Communicates progress through git log
-- Makes PR review easier
-
-**Good commit messages**:
-- What changed (files/features)
-- Why it changed (context)
-- Related issues or PRs
+**Commit hygiene**: Each meaningful change gets own commit with clear message (what + why).
 
 ---
 
