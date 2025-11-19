@@ -353,51 +353,23 @@ pytest
 
 ## Roadmap
 
-**Phase 1 - Foundation** (Completed)
-- [x] Project setup and structure
-- [x] Core infrastructure (LLM client, middleware, monitoring)
-- [x] Exception handling and retry logic
+**Note:** This is a personal project. Roadmap items are ideas and explorations, not commitments. Priorities and timelines may change based on what's useful.
 
-**Phase 2 - Core Evaluation** (Completed)
+**Completed**
 - [x] Core evaluation engine with PydanticAI
-- [x] BasePydanticEvaluator with automatic LLM tracking
-- [x] SemanticEvaluator implementation
-- [x] Main evaluate() API
-- [x] Complete observability (interaction tracking)
+- [x] SemanticEvaluator, CustomCriteriaEvaluator, PairwiseComparisonEvaluator
+- [x] FactualityEvaluator, GroundednessEvaluator, RelevanceEvaluator
+- [x] Batch evaluation API
+- [x] Automatic cost tracking and observability
+- [x] FAISS backend for faster semantic evaluation
 
-**Phase 2.5 - Fill Critical Gaps** (Completed)
-- [x] CustomCriteriaEvaluator (domain-specific evaluation)
-- [x] PairwiseComparisonEvaluator (A/B testing)
-- [x] FAISS backend for SemanticEvaluator (faster than LLM-based, zero cost for embeddings)
-- [x] Multi-evaluator error handling with partial results
-- [x] 12 comprehensive examples (basic, custom criteria, pairwise, batch, advanced config, RAG evaluation, etc.)
-- [x] Complete API documentation (16 API reference pages + MkDocs setup)
-- [x] Evaluator registry system for extensibility
-
-**Phase 3 - Core Evaluators** (Complete - 2 days, accelerated from 3 weeks)
-- [x] FactualityEvaluator (hallucination detection) - 100% coverage
-- [x] GroundednessEvaluator (RAG validation) - 100% coverage
-- [x] RelevanceEvaluator (query alignment) - 100% coverage
-
-**Phase 4 - Batch Evaluation** (Complete - 1 day, accelerated from 1 week)
-- [x] Batch evaluation API (`batch_evaluate()` function)
-- [x] Parallel processing with progress tracking
-- [x] Concurrency control and error handling
-- **Storage backends deferred to v2.0** (users can persist results manually)
-
-**Phase 5 - Enhanced Factuality** (Planned - 6 weeks)
-- [ ] Plugin infrastructure for external verification
-- [ ] TavilyPlugin (web search for fact-checking)
-- [ ] FAISS-based fact verification caching (reuses existing FAISS backend from Phase 2.5)
-- [ ] Atomic claim decomposition
-- [ ] Additional plugins (Wikidata, Wolfram, PubMed)
-- **Milvus deferred to v2.0+** (FAISS covers scale needs for v1.0)
-
-**Phase 6 - Polish & v1.0 Release** (Planned - 2 weeks)
+**Future Ideas** (No timeline, exploring as needed)
+- [ ] Enhanced factuality with external verification plugins
+- [ ] Storage backends for result persistence
 - [ ] PyPI package publication
-- [ ] CI/CD pipeline setup
-- [ ] Documentation site deployment
-- [ ] v1.0 release announcement
+- [ ] Additional evaluators for specific domains
+
+**Contributions welcome!** This is a personal project, but if you find it useful and want to contribute, pull requests are appreciated.
 
 ## License
 
