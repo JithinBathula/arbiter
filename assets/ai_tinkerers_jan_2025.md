@@ -3,6 +3,20 @@
 
 ## Setup Instructions
 
+**Clone and Install:**
+```bash
+# Clone the repository
+git clone https://github.com/evanvolgas/arbiter.git
+cd arbiter
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -e .
+```
+
 **Required API Key:**
 ```bash
 export OPENAI_API_KEY=your_key_here
