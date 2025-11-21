@@ -57,10 +57,10 @@ class MyEvaluator(BasePydanticEvaluator):
 Must work with ANY LLM provider (OpenAI, Anthropic, Google, Groq, Mistral, Cohere).
 
 ```python
-# ✅ GOOD
+# GOOD
 client = await LLMManager.get_client(provider="anthropic", model="claude-3-5-sonnet")
 
-# ❌ BAD
+# BAD
 from openai import OpenAI
 client = OpenAI()  # Hardcoded to OpenAI
 ```
@@ -73,11 +73,11 @@ Production-grade code only. Complete implementations or nothing.
 
 ### 5. Complete Features Only
 If you start, you finish:
-- ✅ Implementation complete
-- ✅ Tests (>80% coverage)
-- ✅ Docstrings
-- ✅ Example code
-- ✅ Exported in `__init__.py`
+- Implementation complete
+- Tests (>80% coverage)
+- Docstrings
+- Example code
+- Exported in `__init__.py`
 
 ### 6. PydanticAI for Structured Outputs
 All evaluators use PydanticAI for type-safe LLM responses.

@@ -9,13 +9,12 @@ description = "Streaming LLM evaluation framework with semantic comparison and c
 authors = [{name = "Evan Volgas", email = "evan.volgas@gmail.com"}]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.11,<3.14"
 keywords = ["ai", "llm", "evaluation", "testing", "metrics", "semantic-comparison"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -50,9 +49,6 @@ scale = [
     "pymilvus>=2.6.0",  # Optional Milvus for v2.0+ (enterprise scale)
 ]
 
-# Streaming support
-streaming = ["bytewax>=0.20.0"]
-
 # Storage backends
 redis = ["redis>=5.0.0"]
 
@@ -73,9 +69,7 @@ dev = [
     "types-aiofiles>=25.0.0",
 
     # Interactive development
-    "ipython>=9.0.0",
     "rich>=14.0.0",
-    "ipdb>=0.13.13",
 
     # Documentation
     "mkdocs>=1.6.0",
@@ -90,7 +84,7 @@ dev = [
 ]
 
 # All features
-all = ["arbiter[anthropic,gemini,mistral,cohere,scale,streaming,redis,dev]"]
+all = ["arbiter[anthropic,gemini,mistral,cohere,scale,redis,dev]"]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -101,11 +95,11 @@ arbiter = ["py.typed"]
 
 [tool.black]
 line-length = 88
-target-version = ['py310', 'py311', 'py312', 'py313']
+target-version = ['py311', 'py312', 'py313']
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -143,7 +137,7 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -170,5 +164,5 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = ["pymilvus", "pymilvus.*", "logfire", "bytewax", "bytewax.*", "faiss", "sentence_transformers", "sentence_transformers.*"]
+module = ["pymilvus", "pymilvus.*", "logfire", "faiss", "sentence_transformers", "sentence_transformers.*"]
 ignore_missing_imports = true

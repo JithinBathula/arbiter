@@ -4,7 +4,7 @@
   <p><strong>Native PydanticAI evaluation with automatic cost tracking</strong></p>
 
   <p>
-    <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python"></a>
+    <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.11+-blue" alt="Python"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
     <a href="https://github.com/evanvolgas/arbiter"><img src="https://img.shields.io/badge/version-0.1.0--alpha-blue" alt="Version"></a>
     <a href="https://ai.pydantic.dev"><img src="https://img.shields.io/badge/PydanticAI-native-purple" alt="PydanticAI"></a>
@@ -61,15 +61,19 @@ print(f"Calls: {len(result.interactions)}")           # Every LLM interaction
 
 ## Installation
 
+**Requirements**: Python 3.11+
+
 ```bash
 # Clone the repository
 git clone https://github.com/evanvolgas/arbiter.git
 cd arbiter
 
-# Install with uv (recommended)
-uv pip install -e .
+# Install with uv (recommended - handles environment automatically)
+uv sync
 
-# Or with standard pip
+# Or with pip (manual environment management)
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
@@ -152,7 +156,7 @@ print(f"Score difference: {abs(result_gpt4.overall_score - result_mini.overall_s
 
 - **Simple API**: Evaluate LLM outputs with 3 lines of code
 - **Automatic Observability**: Automatic LLM interaction tracking with cost and performance metrics
-- **Provider-Agnostic**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere support
+- **Provider-Agnostic**: Works with any model from OpenAI, Anthropic, Google, Groq, Mistral, or Cohere (via PydanticAI)
 - **Middleware Pipeline**: Logging, metrics, caching, rate limiting
 - **Semantic Evaluation**: Similarity scoring with LLM or FAISS backends (significantly faster, zero cost for embeddings)
 - **Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
@@ -315,11 +319,21 @@ Built on proven patterns with type-safe foundations:
 
 ## Examples
 
-17 comprehensive examples demonstrating all features:
+18 comprehensive examples demonstrating all features.
+
+**Running Examples:**
+```bash
+# With uv (recommended)
+uv run python examples/basic_evaluation.py
+
+# Or if you activated venv manually
+python examples/basic_evaluation.py
+```
 
 **Getting Started:**
+- [Debugging Multi-Call Systems](examples/debugging_multi_call.py) - The black box problem solved
 - [Basic Evaluation](examples/basic_evaluation.py) - Simple semantic evaluation with cost tracking
-- [Cost Comparison](examples/cost_comparison.py) - NEW: Model cost/quality analysis
+- [Cost Comparison](examples/cost_comparison.py) - Model cost/quality analysis
 - [Multiple Evaluators](examples/multiple_evaluators.py) - Combining evaluators
 
 **Evaluators:**
@@ -344,59 +358,43 @@ Built on proven patterns with type-safe foundations:
 ## Development
 
 ```bash
+# Clone and setup
 git clone https://github.com/evanvolgas/arbiter.git
 cd arbiter
-pip install -e ".[dev]"
-pytest
+
+# Install with development dependencies
+uv sync --all-extras
+
+# Run tests
+uv run pytest
+
+# Or use make commands
+make test          # Run tests
+make test-cov      # Tests with coverage
+make lint          # Check code quality
+make format        # Format code
+make type-check    # Type checking
 ```
 
 ## Roadmap
 
-**Phase 1 - Foundation** (Completed)
-- [x] Project setup and structure
-- [x] Core infrastructure (LLM client, middleware, monitoring)
-- [x] Exception handling and retry logic
+**Note:** This is a personal project. Roadmap items are ideas and explorations, not commitments. Priorities and timelines may change based on what's useful.
 
-**Phase 2 - Core Evaluation** (Completed)
+**Completed**
 - [x] Core evaluation engine with PydanticAI
-- [x] BasePydanticEvaluator with automatic LLM tracking
-- [x] SemanticEvaluator implementation
-- [x] Main evaluate() API
-- [x] Complete observability (interaction tracking)
+- [x] SemanticEvaluator, CustomCriteriaEvaluator, PairwiseComparisonEvaluator
+- [x] FactualityEvaluator, GroundednessEvaluator, RelevanceEvaluator
+- [x] Batch evaluation API
+- [x] Automatic cost tracking and observability
+- [x] FAISS backend for faster semantic evaluation
 
-**Phase 2.5 - Fill Critical Gaps** (Completed)
-- [x] CustomCriteriaEvaluator (domain-specific evaluation)
-- [x] PairwiseComparisonEvaluator (A/B testing)
-- [x] FAISS backend for SemanticEvaluator (faster than LLM-based, zero cost for embeddings)
-- [x] Multi-evaluator error handling with partial results
-- [x] 12 comprehensive examples (basic, custom criteria, pairwise, batch, advanced config, RAG evaluation, etc.)
-- [x] Complete API documentation (16 API reference pages + MkDocs setup)
-- [x] Evaluator registry system for extensibility
-
-**Phase 3 - Core Evaluators** (Complete - 2 days, accelerated from 3 weeks)
-- [x] FactualityEvaluator (hallucination detection) - 100% coverage
-- [x] GroundednessEvaluator (RAG validation) - 100% coverage
-- [x] RelevanceEvaluator (query alignment) - 100% coverage
-
-**Phase 4 - Batch Evaluation** (Complete - 1 day, accelerated from 1 week)
-- [x] Batch evaluation API (`batch_evaluate()` function)
-- [x] Parallel processing with progress tracking
-- [x] Concurrency control and error handling
-- **Storage backends deferred to v2.0** (users can persist results manually)
-
-**Phase 5 - Enhanced Factuality** (Planned - 6 weeks)
-- [ ] Plugin infrastructure for external verification
-- [ ] TavilyPlugin (web search for fact-checking)
-- [ ] FAISS-based fact verification caching (reuses existing FAISS backend from Phase 2.5)
-- [ ] Atomic claim decomposition
-- [ ] Additional plugins (Wikidata, Wolfram, PubMed)
-- **Milvus deferred to v2.0+** (FAISS covers scale needs for v1.0)
-
-**Phase 6 - Polish & v1.0 Release** (Planned - 2 weeks)
+**Future Ideas** (No timeline, exploring as needed)
+- [ ] Enhanced factuality with external verification plugins
+- [ ] Storage backends for result persistence
 - [ ] PyPI package publication
-- [ ] CI/CD pipeline setup
-- [ ] Documentation site deployment
-- [ ] v1.0 release announcement
+- [ ] Additional evaluators for specific domains
+
+**Contributions welcome!** This is a personal project, but if you find it useful and want to contribute, pull requests are appreciated.
 
 ## License
 
