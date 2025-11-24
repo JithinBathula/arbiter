@@ -142,26 +142,122 @@ Provide clear reasoning that helps understand your decision."""
     ) -> str:
         """Get user prompt for pairwise comparison.
 
-        Note: This method signature matches BasePydanticEvaluator but is not
-        used directly. The compare() method creates its own prompt.
+        When evaluate() is called with a single output, this compares the output
+        against the reference text (treating them as output_a and output_b).
+
+        Args:
+            output: The output to evaluate (treated as output_a)
+            reference: Reference text to compare against (treated as output_b)
+            criteria: Optional evaluation criteria
+
+        Returns:
+            Formatted comparison prompt
+
+        Raises:
+            ValueError: If reference is not provided
         """
-        # This is not used - compare() method creates its own prompt
-        raise NotImplementedError(
-            "Use compare() method instead of evaluate() for pairwise comparison"
-        )
+        if not reference:
+            raise ValueError(
+                "PairwiseComparisonEvaluator.evaluate() requires a reference text. "
+                "The output is compared against the reference. "
+                "Use compare() method for explicit output_a vs output_b comparison."
+            )
+
+        # Build comparison prompt (output vs reference)
+        prompt_parts = [
+            "Compare these two outputs and determine which is better:",
+            "",
+            "OUTPUT A:",
+            output,
+            "",
+            "OUTPUT B (REFERENCE):",
+            reference,
+        ]
+
+        if criteria:
+            prompt_parts.extend(
+                [
+                    "",
+                    "EVALUATION CRITERIA:",
+                    criteria,
+                    "",
+                    "Compare the outputs on each criterion and provide:",
+                    "1. A score (0.0-1.0) for each output on each criterion",
+                    "2. Reasoning for each comparison",
+                    "3. An overall winner (output_a, output_b, or tie)",
+                    "4. Overall confidence and reasoning",
+                ]
+            )
+        else:
+            prompt_parts.extend(
+                [
+                    "",
+                    "Compare the outputs overall and determine:",
+                    "1. Which output is better (output_a, output_b, or tie)",
+                    "2. Your confidence in this decision",
+                    "3. Detailed reasoning explaining your choice",
+                ]
+            )
+
+        return "\n".join(prompt_parts)
 
     def _get_response_type(self) -> Type[BaseModel]:
         """Use pairwise response model."""
         return PairwiseResponse
 
     async def _compute_score(self, response: BaseModel) -> Score:
-        """Not used for pairwise comparison - compare() returns ComparisonResult directly.
+        """Compute score from pairwise comparison response.
 
-        This method satisfies the abstract base class requirement but should not
-        be called in practice. Use compare() method instead.
+        For evaluate() calls, this converts the pairwise comparison result
+        (output vs reference) into a single score. If output_a wins, score is high.
+        If output_b (reference) wins, score is low. Ties get medium score.
+
+        Args:
+            response: PairwiseResponse from LLM
+
+        Returns:
+            Score representing how well output compares to reference
         """
-        raise NotImplementedError(
-            "PairwiseComparisonEvaluator uses compare() method, not evaluate()"
+        pairwise_response = cast(PairwiseResponse, response)
+
+        # Convert winner to a score:
+        # - output_a wins (output better than reference) → high score (0.8-1.0)
+        # - tie → medium score (0.5)
+        # - output_b wins (reference better than output) → low score (0.0-0.2)
+        if pairwise_response.winner == "output_a":
+            # Output is better than reference
+            base_score = 0.9
+        elif pairwise_response.winner == "tie":
+            # Output is equivalent to reference
+            base_score = 0.5
+        else:  # output_b wins
+            # Reference is better than output
+            base_score = 0.1
+
+        # Modulate by confidence (low confidence → move toward 0.5)
+        confidence = pairwise_response.confidence
+        final_score = base_score * confidence + 0.5 * (1 - confidence)
+
+        # Build explanation
+        explanation_parts = [pairwise_response.reasoning]
+
+        if pairwise_response.aspect_comparisons:
+            explanation_parts.append("\n\nAspect Comparisons:")
+            for aspect in pairwise_response.aspect_comparisons:
+                explanation_parts.append(
+                    f"- {aspect.aspect}: Output={aspect.output_a_score:.2f}, "
+                    f"Reference={aspect.output_b_score:.2f} ({aspect.reasoning})"
+                )
+
+        return Score(
+            name=self.name,
+            value=final_score,
+            confidence=confidence,
+            explanation="\n".join(explanation_parts),
+            metadata={
+                "winner": pairwise_response.winner,
+                "aspect_count": len(pairwise_response.aspect_comparisons),
+            },
         )
 
     async def compare(

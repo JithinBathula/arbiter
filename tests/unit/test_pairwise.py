@@ -35,10 +35,20 @@ class TestPairwiseComparisonEvaluator:
         assert "expert evaluator" in prompt.lower()
         assert "compare" in prompt.lower()
 
-    def test_user_prompt_not_used(self, evaluator):
-        """Test that _get_user_prompt raises NotImplementedError."""
-        with pytest.raises(NotImplementedError):
+    def test_user_prompt_requires_reference(self, evaluator):
+        """Test that _get_user_prompt requires reference text."""
+        with pytest.raises(ValueError) as exc_info:
             evaluator._get_user_prompt("output", None, None)
+        assert "requires a reference" in str(exc_info.value)
+
+    def test_user_prompt_with_reference(self, evaluator):
+        """Test that _get_user_prompt generates valid prompt with reference."""
+        prompt = evaluator._get_user_prompt("test output", "reference text", "accuracy")
+        assert "test output" in prompt
+        assert "reference text" in prompt
+        assert "accuracy" in prompt.lower()
+        assert "OUTPUT A:" in prompt
+        assert "OUTPUT B" in prompt
 
     def test_response_type(self, evaluator):
         """Test that response type is correct."""
@@ -46,10 +56,44 @@ class TestPairwiseComparisonEvaluator:
         assert response_type == PairwiseResponse
 
     @pytest.mark.asyncio
-    async def test_compute_score_not_used(self, evaluator):
-        """Test that _compute_score raises NotImplementedError."""
-        with pytest.raises(NotImplementedError):
-            await evaluator._compute_score(MagicMock())
+    async def test_compute_score_output_wins(self, evaluator):
+        """Test _compute_score when output wins (high score)."""
+        mock_response = PairwiseResponse(
+            winner="output_a",
+            confidence=0.9,
+            reasoning="Output is better",
+            aspect_comparisons=[],
+        )
+        score = await evaluator._compute_score(mock_response)
+        assert score.value > 0.7  # High score when output wins
+        assert score.confidence == 0.9
+        assert "Output is better" in score.explanation
+
+    @pytest.mark.asyncio
+    async def test_compute_score_reference_wins(self, evaluator):
+        """Test _compute_score when reference wins (low score)."""
+        mock_response = PairwiseResponse(
+            winner="output_b",
+            confidence=0.85,
+            reasoning="Reference is better",
+            aspect_comparisons=[],
+        )
+        score = await evaluator._compute_score(mock_response)
+        assert score.value < 0.3  # Low score when reference wins
+        assert score.confidence == 0.85
+
+    @pytest.mark.asyncio
+    async def test_compute_score_tie(self, evaluator):
+        """Test _compute_score when it's a tie (medium score)."""
+        mock_response = PairwiseResponse(
+            winner="tie",
+            confidence=0.8,
+            reasoning="Equivalent quality",
+            aspect_comparisons=[],
+        )
+        score = await evaluator._compute_score(mock_response)
+        assert 0.4 < score.value < 0.6  # Medium score for tie
+        assert score.confidence == 0.8
 
     @pytest.mark.asyncio
     async def test_compare_output_a_wins(self, evaluator, mock_agent):
@@ -382,6 +426,55 @@ class TestPairwiseResponse:
 
         response3 = PairwiseResponse(winner="tie", confidence=0.9, reasoning="Test")
         assert response3.winner == "tie"
+
+    @pytest.mark.asyncio
+    async def test_evaluate_method_output_vs_reference(self, evaluator, mock_agent):
+        """Test evaluate() method comparing output against reference."""
+        mock_response = PairwiseResponse(
+            winner="output_a",
+            confidence=0.9,
+            reasoning="Output is better than reference",
+            aspect_comparisons=[
+                AspectComparison(
+                    aspect="accuracy",
+                    output_a_score=0.95,
+                    output_b_score=0.85,
+                    reasoning="Output is more accurate",
+                ),
+            ],
+        )
+
+        mock_result = MockAgentResult(mock_response)
+        mock_agent.run = AsyncMock(return_value=mock_result)
+        evaluator._llm_client = evaluator.llm_client
+        evaluator.llm_client.create_agent = MagicMock(return_value=mock_agent)
+
+        # Call evaluate() with output and reference
+        score = await evaluator.evaluate(
+            output="My output text",
+            reference="Reference text to compare against",
+            criteria="accuracy",
+        )
+
+        # Should get high score since output_a (output) won
+        assert score.value > 0.7
+        assert score.confidence == 0.9
+        assert "Output is better than reference" in score.explanation
+        assert score.metadata["winner"] == "output_a"
+
+        # Verify prompt was built correctly
+        call_args = mock_agent.run.call_args[0][0]
+        assert "My output text" in call_args
+        assert "Reference text to compare against" in call_args
+        assert "OUTPUT A:" in call_args
+        assert "OUTPUT B (REFERENCE):" in call_args
+
+    @pytest.mark.asyncio
+    async def test_evaluate_without_reference_raises_error(self, evaluator):
+        """Test that evaluate() requires reference text."""
+        with pytest.raises(EvaluatorError) as exc_info:
+            await evaluator.evaluate(output="Test output")
+        assert "requires a reference" in str(exc_info.value)
 
 
 class TestAspectComparison:
