@@ -91,6 +91,10 @@ dev = [
     "watchdog>=6.0.0",
     "psutil>=7.0.0",
     "setuptools>=80.0.0",
+
+    # Publishing
+    "build>=1.0.0",
+    "twine>=6.0.0",
 ]
 
 # All features
@@ -180,5 +184,5 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = ["pymilvus", "pymilvus.*", "logfire", "faiss", "sentence_transformers", "sentence_transformers.*"]
+module = ["pymilvus", "pymilvus.*", "logfire", "faiss", "sentence_transformers", "sentence_transformers.*", "asyncpg", "asyncpg.*"]
 ignore_missing_imports = true
