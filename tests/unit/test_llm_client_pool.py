@@ -370,7 +370,9 @@ class TestLLMClientPool:
         assert metrics.idle_connections == 1  # 1 connection idle at end
 
     @pytest.mark.asyncio
-    @patch("arbiter_ai.core.llm_client_pool.LLMClient", side_effect=Exception("API Error"))
+    @patch(
+        "arbiter_ai.core.llm_client_pool.LLMClient", side_effect=Exception("API Error")
+    )
     async def test_get_client_error_handling(self, mock_client_class, initialized_pool):
         """Test error handling when creating client fails."""
         with pytest.raises(ModelProviderError, match="Failed to create LLM client"):

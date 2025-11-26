@@ -5,7 +5,10 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from arbiter_ai.core.exceptions import EvaluatorError
-from arbiter_ai.evaluators.groundedness import GroundednessEvaluator, GroundednessResponse
+from arbiter_ai.evaluators.groundedness import (
+    GroundednessEvaluator,
+    GroundednessResponse,
+)
 from tests.conftest import MockAgentResult
 
 

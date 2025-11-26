@@ -175,7 +175,9 @@ class TestLLMClient:
         mock_response.usage.completion_tokens = 50
         mock_response.usage.total_tokens = 100
 
-        with patch("arbiter_ai.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
+        with patch(
+            "arbiter_ai.core.llm_client.openai.AsyncOpenAI"
+        ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
             mock_openai_class.return_value = mock_client
@@ -196,7 +198,9 @@ class TestLLMClient:
     @pytest.mark.asyncio
     async def test_execute_completion_rate_limit_error(self):
         """Test completion with rate limit error."""
-        with patch("arbiter_ai.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
+        with patch(
+            "arbiter_ai.core.llm_client.openai.AsyncOpenAI"
+        ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create = AsyncMock(
                 side_effect=Exception("Rate limit exceeded")
@@ -214,7 +218,9 @@ class TestLLMClient:
     @pytest.mark.asyncio
     async def test_execute_completion_auth_error(self):
         """Test completion with authentication error."""
-        with patch("arbiter_ai.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
+        with patch(
+            "arbiter_ai.core.llm_client.openai.AsyncOpenAI"
+        ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create = AsyncMock(
                 side_effect=Exception("Invalid API key")
@@ -232,7 +238,9 @@ class TestLLMClient:
     @pytest.mark.asyncio
     async def test_execute_completion_generic_error(self):
         """Test completion with generic error."""
-        with patch("arbiter_ai.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
+        with patch(
+            "arbiter_ai.core.llm_client.openai.AsyncOpenAI"
+        ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create = AsyncMock(
                 side_effect=Exception("Network error")
@@ -260,7 +268,9 @@ class TestLLMClient:
         mock_response.usage.completion_tokens = 25
         mock_response.usage.total_tokens = 50
 
-        with patch("arbiter_ai.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
+        with patch(
+            "arbiter_ai.core.llm_client.openai.AsyncOpenAI"
+        ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
             mock_openai_class.return_value = mock_client
@@ -287,7 +297,9 @@ class TestLLMClient:
         mock_response.usage.completion_tokens = 35
         mock_response.usage.total_tokens = 75
 
-        with patch("arbiter_ai.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
+        with patch(
+            "arbiter_ai.core.llm_client.openai.AsyncOpenAI"
+        ) as mock_openai_class:
             mock_client = AsyncMock()
             mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
             mock_openai_class.return_value = mock_client

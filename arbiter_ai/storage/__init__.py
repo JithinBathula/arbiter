@@ -42,7 +42,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> type:
     """Lazy import for optional storage backends.
 
     This allows importing from arbiter_ai.storage without requiring

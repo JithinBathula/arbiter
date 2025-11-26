@@ -326,10 +326,8 @@ class MetricsMiddleware(Middleware):
                 # Track pass/fail
                 if result.passed:
                     self.metrics["passed_count"] += 1
-            elif isinstance(result, ComparisonResult):
+            else:  # isinstance(result, ComparisonResult)
                 score_value = result.confidence
-            else:
-                score_value = 0.0
 
             self.metrics["average_score"] = (
                 old_avg * (total - 1) + float(score_value)
@@ -518,7 +516,8 @@ class RateLimitingMiddleware(Middleware):
         # Add current request
         self.requests.append(now)
 
-        return await next_handler(output, reference)
+        result = await next_handler(output, reference)
+        return result  # type: ignore[no-any-return]
 
 
 class MiddlewarePipeline:
@@ -696,7 +695,8 @@ class MiddlewarePipeline:
             if index >= len(self.middleware):
                 # End of middleware chain, call final pairwise handler
                 # Use original outputs, not formatted version
-                return await final_handler(output_a, output_b, criteria, reference)
+                result = await final_handler(output_a, output_b, criteria, reference)
+                return result  # type: ignore[no-any-return]
 
             # Call current middleware with formatted output
             current = self.middleware[index]

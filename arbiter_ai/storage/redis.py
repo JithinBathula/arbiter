@@ -54,10 +54,12 @@ class RedisStorage(StorageBackend):
 
         self.ttl = ttl
         self.key_prefix = key_prefix
-        self.client: Optional[redis.Redis] = None
+        self.client: Optional[redis.Redis[str]] = None
 
     async def connect(self) -> None:
         """Establish Redis connection."""
+        if not self.redis_url:
+            raise ValueError("REDIS_URL is required")
         try:
             self.client = await redis.from_url(
                 self.redis_url,
