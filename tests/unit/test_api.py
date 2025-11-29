@@ -81,6 +81,7 @@ class TestEvaluateFunction:
             score=0.85,
             confidence=0.9,
             explanation="Meets criteria",
+            criteria_met=["Accuracy", "Clarity"],  # Need criteria for high confidence
         )
 
         mock_result = MockAgentResult(mock_response)
@@ -119,12 +120,14 @@ class TestEvaluateFunction:
             score=0.9,
             confidence=0.85,
             explanation="High similarity",
+            key_similarities=["Same meaning"],  # Need supporting details
         )
 
         criteria_response = CustomCriteriaResponse(
             score=0.85,
             confidence=0.9,
             explanation="Meets criteria",
+            criteria_met=["Accuracy", "Clarity"],  # Need criteria for high confidence
         )
 
         # First call returns semantic, second returns criteria
@@ -475,7 +478,7 @@ class TestCompareFunction:
             winner="output_a",
             confidence=0.9,
             reasoning="Output A is better",
-            aspect_scores=[],
+            aspect_comparisons=[],
         )
 
         mock_result = MockAgentResult(mock_response)
@@ -503,7 +506,7 @@ class TestCompareFunction:
             winner="output_b",
             confidence=0.85,
             reasoning="Output B matches reference better",
-            aspect_scores=[],
+            aspect_comparisons=[],
         )
 
         mock_result = MockAgentResult(mock_response)
@@ -529,7 +532,7 @@ class TestCompareFunction:
             winner="output_a",
             confidence=0.9,
             reasoning="Output A meets criteria better",
-            aspect_scores=[],
+            aspect_comparisons=[],
         )
 
         mock_result = MockAgentResult(mock_response)
@@ -555,7 +558,7 @@ class TestCompareFunction:
             winner="tie",
             confidence=0.7,
             reasoning="Both outputs are equivalent",
-            aspect_scores=[],
+            aspect_comparisons=[],
         )
 
         mock_result = MockAgentResult(mock_response)
@@ -636,7 +639,7 @@ class TestCompareFunction:
             winner="output_a",
             confidence=0.9,
             reasoning="Test",
-            aspect_scores=[],
+            aspect_comparisons=[],
         )
 
         mock_result = MockAgentResult(mock_response)
@@ -670,7 +673,7 @@ class TestCompareFunction:
             winner="output_a",
             confidence=0.9,
             reasoning="Test",
-            aspect_scores=[],
+            aspect_comparisons=[],
         )
 
         mock_result = MockAgentResult(mock_response)

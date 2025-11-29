@@ -50,11 +50,6 @@ def mock_eval_result():
                 purpose="scoring",
             )
         ],
-        total_input_tokens=10,
-        total_output_tokens=20,
-        total_cached_tokens=0,
-        total_tokens_used=30,
-        total_cost=0.0015,
         processing_time=1.5,
     )
 
@@ -330,7 +325,10 @@ class TestPostgresStorageGetResult:
         storage = PostgresStorage(database_url="postgresql://localhost/test")
         storage.pool = mock_pool
 
-        result_data = mock_eval_result.model_dump(mode="json")
+        # Exclude computed fields like storage does
+        result_data = mock_eval_result.model_dump(
+            mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}}
+        )
         # Use mock_pool._conn instead
         mock_pool._conn.fetchrow = AsyncMock(
             return_value={"result_data": json.dumps(result_data)}
@@ -385,7 +383,13 @@ class TestPostgresStorageGetBatchResult:
         storage = PostgresStorage(database_url="postgresql://localhost/test")
         storage.pool = mock_pool
 
-        result_data = mock_batch_result.model_dump(mode="json")
+        # Exclude computed fields like storage does
+        result_data = mock_batch_result.model_dump(
+            mode="json",
+            exclude={
+                "results": {"__all__": {"interactions": {"__all__": {"total_tokens"}}}}
+            },
+        )
         # Use mock_pool._conn instead
         mock_pool._conn.fetchrow = AsyncMock(
             return_value={"result_data": json.dumps(result_data)}
