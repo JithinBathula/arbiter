@@ -10,7 +10,7 @@ internally. It integrates with PydanticAI for structured outputs.
 - **Unified Interface**: Same API regardless of provider
 - **Structured Outputs**: PydanticAI integration for type-safe responses
 - **Retry Logic**: Built-in retry for transient failures
-- **OpenAI Compatibility**: Uses OpenAI SDK for compatible providers
+- **Unified Provider Support**: All providers route through PydanticAI
 
 ## Supported Providers:
 
@@ -57,7 +57,6 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 
 import logfire
-import openai
 from dotenv import load_dotenv
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field
@@ -116,9 +115,8 @@ class LLMClient:
     - Retry logic for transient failures
     - Integration with PydanticAI for structured outputs
 
-    For providers with OpenAI-compatible APIs (OpenAI, Groq), it uses
-    the OpenAI SDK directly. For others (Anthropic, Gemini), it uses
-    PydanticAI's built-in support.
+    All providers route through PydanticAI for consistency and unified
+    message handling across all LLM providers.
 
     Example:
         >>> # Create client for OpenAI
@@ -137,14 +135,7 @@ class LLMClient:
         provider: The LLM provider being used
         model: The model name requested by the user
         temperature: Generation temperature (0.0-2.0)
-        client: The underlying API client (OpenAI SDK or similar)
     """
-
-    # Provider base URLs for OpenAI-compatible APIs
-    PROVIDER_URLS = {
-        Provider.OPENAI: "https://api.openai.com/v1",
-        Provider.GROQ: "https://api.groq.com/openai/v1",
-    }
 
     # Model mappings
     MODEL_MAPPINGS = {
@@ -187,13 +178,8 @@ class LLMClient:
             )
         )
 
-        # For OpenAI-compatible providers
-        if provider in [Provider.OPENAI, Provider.GROQ]:
-            base_url = self.PROVIDER_URLS.get(provider)
-            self.client = openai.AsyncOpenAI(api_key=self._api_key, base_url=base_url)
-        else:
-            # For other providers, fallback to OpenAI
-            self.client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # All providers route through PydanticAI for consistency
+        # PydanticAI handles provider-specific details internally
 
     @staticmethod
     def _get_api_key(provider: Provider) -> Optional[str]:
@@ -304,32 +290,73 @@ class LLMClient:
         Raises:
             ModelProviderError: If the API call fails
         """
+        # All providers route through PydanticAI for consistency
+        return await self._execute_pydanticai_completion(provider_model, typed_messages, **kwargs)
+
+    async def _execute_pydanticai_completion(
+        self,
+        provider_model: str,
+        typed_messages: List[ChatCompletionMessageParam],
+        **kwargs: Any,
+    ) -> LLMResponse:
+        """Execute completion via PydanticAI for all providers."""
         try:
-            response = await self.client.chat.completions.create(
-                model=provider_model,
-                messages=typed_messages,
-                temperature=kwargs.get("temperature", self.temperature),
-                **{k: v for k, v in kwargs.items() if k != "temperature"},
+            # Build simple system prompt from first system message if present
+            system_prompt = ""
+            user_messages: List[str] = []
+            for msg in typed_messages:
+                role = msg.get("role")
+                content = msg.get("content") or ""
+                if role == "system" and not system_prompt:
+                    system_prompt = str(content)
+                elif role == "user":
+                    user_messages.append(str(content))
+                elif role == "assistant":
+                    # Preserve prior assistant messages inline for context
+                    user_messages.append(f"[assistant]\n{content}")
+                else:
+                    user_messages.append(str(content))
+
+            # Fallback system prompt for providers that require it
+            if not system_prompt:
+                system_prompt = "You are a helpful assistant."
+
+            # Flatten user messages into a single prompt; PydanticAI Agent.run
+            # expects a single input payload.
+            user_prompt = "\n\n".join(user_messages) if user_messages else ""
+
+            # Create a lightweight agent for this call
+            agent = Agent(
+                model=f"{self.provider.value}:{provider_model}",
+                output_type=str,
+                system_prompt=system_prompt,
+                model_settings=ModelSettings(
+                    temperature=kwargs.get("temperature", self.temperature),
+                ),
             )
 
-            # Extract detailed token usage
-            usage_dict = {}
-            if response.usage:
-                usage_dict = {
-                    "prompt_tokens": response.usage.prompt_tokens,
-                    "completion_tokens": response.usage.completion_tokens,
-                    "total_tokens": response.usage.total_tokens,
-                }
-                # Some providers (e.g., Anthropic) support cached tokens
-                if hasattr(response.usage, "prompt_tokens_details"):
-                    details = response.usage.prompt_tokens_details
-                    if hasattr(details, "cached_tokens"):
-                        usage_dict["cached_tokens"] = details.cached_tokens
+            result = await agent.run(user_prompt)
 
+            usage_dict: Dict[str, int] = {}
+            raw = getattr(result, "raw_response", None)
+            if raw is not None:
+                usage = getattr(raw, "usage", None)
+                if usage:
+                    prompt_tokens = getattr(usage, "prompt_tokens", None)
+                    completion_tokens = getattr(usage, "completion_tokens", None)
+                    total_tokens = getattr(usage, "total_tokens", None)
+                    if prompt_tokens is not None:
+                        usage_dict["prompt_tokens"] = prompt_tokens
+                    if completion_tokens is not None:
+                        usage_dict["completion_tokens"] = completion_tokens
+                    if total_tokens is not None:
+                        usage_dict["total_tokens"] = total_tokens
+
+            content = result.output if hasattr(result, "output") else ""
             return LLMResponse(
-                content=response.choices[0].message.content or "",
+                content=str(content),
                 usage=usage_dict,
-                model=provider_model,
+                model=f"{self.provider.value}:{provider_model}",
             )
         except Exception as e:
             error_msg = str(e).lower()
@@ -338,14 +365,14 @@ class LLMClient:
             if "rate limit" in error_msg:
                 details["error_code"] = "rate_limit"
                 raise ModelProviderError("Rate limit exceeded", details=details) from e
-            elif "api key" in error_msg or "unauthorized" in error_msg:
+            elif "api key" in error_msg or "unauthorized" in error_msg or "authentication" in error_msg:
                 details["error_code"] = "authentication"
                 raise ModelProviderError(
                     "Authentication failed", details=details
                 ) from e
             else:
                 raise ModelProviderError(
-                    f"LLM API error: {e!s}", details=details
+                    f"LLM API error via PydanticAI: {e!s}", details=details
                 ) from e
 
     @with_retry(RETRY_STANDARD)
