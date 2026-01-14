@@ -57,7 +57,7 @@ from .core.models import (
 )
 from .evaluators import PairwiseComparisonEvaluator
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("arbiter.api")
 
 __all__ = ["evaluate", "compare", "batch_evaluate"]
 
@@ -127,6 +127,9 @@ async def evaluate(
         >>> cost = result.total_llm_cost(cost_per_1k_tokens=0.03)
         >>> print(f"Total cost: ${cost:.4f}")
     """
+
+    logger.debug(f"Starting evaluation with evaluators={evaluators}")
+    
     # Validate inputs before any processing
     validate_evaluate_inputs(
         output=output,
@@ -154,10 +157,10 @@ async def evaluate(
                 threshold=threshold,
             )
 
-        return await middleware.execute(output, reference, _evaluate_core)
+        result =  await middleware.execute(output, reference, _evaluate_core)
 
     # No middleware, run directly
-    return await _evaluate_impl(
+    result = await _evaluate_impl(
         output=output,
         reference=reference,
         criteria=criteria,
@@ -168,6 +171,8 @@ async def evaluate(
         threshold=threshold,
     )
 
+    logger.debug(f"Evaluation complete: score={result.overall_score:.2f}, passed={result.passed}")
+    return result
 
 async def _evaluate_impl(
     output: str,

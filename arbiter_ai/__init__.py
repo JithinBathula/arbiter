@@ -175,6 +175,8 @@ __all__ = [
     "MetricType",
     "StorageType",
     "EvaluatorName",
+    # Logging
+    "configure_logging",
     # Registry
     "AVAILABLE_EVALUATORS",
     "register_evaluator",

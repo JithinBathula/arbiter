@@ -55,7 +55,7 @@ The client will automatically use the appropriate key based on the model.
 
 import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
-
+import logging
 import logfire
 from dotenv import load_dotenv
 from openai.types.chat import ChatCompletionMessageParam
@@ -79,6 +79,7 @@ if os.getenv("LOGFIRE_TOKEN"):
 
 __all__ = ["LLMClient", "LLMManager", "LLMResponse", "Provider"]
 
+logger = logging.getLogger("arbiter.llm_client")
 
 class LLMResponse(BaseModel):
     """Standardized response from any LLM provider.
@@ -402,6 +403,9 @@ class LLMClient:
             ModelProviderError: If the API call fails
             CircuitBreakerOpenError: If circuit breaker is open
         """
+        start_time = time.time()
+        logger.debug(f"Calling {self.model} via {self.provider.value}")
+
         provider_model = self._get_provider_model()
 
         # Cast messages to the expected type
@@ -409,7 +413,7 @@ class LLMClient:
 
         # Wrap API call with circuit breaker if available
         if self.circuit_breaker:
-            return await self.circuit_breaker.call(
+            response = await self.circuit_breaker.call(
                 self._execute_completion,
                 provider_model,
                 typed_messages,
@@ -417,9 +421,13 @@ class LLMClient:
             )
         else:
             # No circuit breaker, call directly
-            return await self._execute_completion(
+            response = await self._execute_completion(
                 provider_model, typed_messages, **kwargs
             )
+        
+        logger.debug(f"Response received in {time.time() - start_time:.2f}s (input={response.input_tokens}, output={response.output_tokens})")
+
+        return response
 
 
 class LLMManager:

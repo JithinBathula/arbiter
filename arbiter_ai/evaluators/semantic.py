@@ -49,6 +49,8 @@ from typing import Literal, Optional, Type, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+import logging
+
 from ..core.llm_client import LLMClient
 from ..core.models import Score
 from .base import BasePydanticEvaluator
@@ -60,6 +62,7 @@ from .similarity_backends import (
 
 __all__ = ["SemanticEvaluator", "SemanticResponse"]
 
+logger = logging.getLogger("arbiter.semantic")
 
 class SemanticResponse(BaseModel):
     """Structured response for semantic similarity evaluation."""
@@ -250,7 +253,7 @@ class SemanticEvaluator(BasePydanticEvaluator):
 
     def _get_system_prompt(self) -> str:
         """Get system prompt defining semantic evaluation approach."""
-        return """You are an expert at evaluating semantic similarity between texts.
+        prompt = """You are an expert at evaluating semantic similarity between texts.
 
 Your task is to assess how similar two texts are in MEANING, not just in wording.
 
@@ -272,6 +275,9 @@ Provide:
 - Key similarities and differences you identified
 
 Be precise and analytical in your evaluation."""
+
+        logger.debug(f"System prompt: {len(prompt)} chars")
+        return prompt
 
     def _get_user_prompt(
         self, output: str, reference: Optional[str], criteria: Optional[str]
